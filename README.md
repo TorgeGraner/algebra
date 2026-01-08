@@ -33,10 +33,11 @@ Using the scaled inverse therefore allows us to stay in the ring of integers, ev
 The algorithm calculates the characteristic polynomial of the given matrix and searches (very naively) for a factorization. For each linear factor, it determines a base for the corresponding generalized Eigenspaces and combines them to a complete base. If the characteristic polynomial does not break down completely, return a partial base.
 
 
-
 ## Notes
 Note that all datastructures are defined in the .hpp, since template classes cannot be seperated into .hpp and .cpp. The problem comes from the compiler not being able to infer the same template parameter for .hpp and .cpp. This problem could be fixed by always including the corresponding .cpp together with the .hpp.
 
 Even though the native type int can be used as a ring, under given circumstances this can produce problems. For example the statement ```Matrix<Fractionalize<int>> A = 0``` would not compile, since the compiler would get confused with the current type. Use the wrapper class Integer instead. 
 
 The algorithm does not work well with floating point arithmetic, even with a wrapper class, since rounding error can still influence the rank of a matrix, leading to faulty logic producing errors.
+
+Some array is allocated somewhere that is never deallocated.
