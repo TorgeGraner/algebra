@@ -89,20 +89,21 @@ Polynomial<R> Polynomial<R>::polyDiv(const Polynomial& divisor) const {
 	int degS = divisor.getDegree();
 	int newDeg = degF - degS;
 	if (degF < 0) return 0;
-	R* res_arr = util::allocate<R>(newDeg + 1);
+	R* resArr = util::allocate<R>(newDeg + 1);
+	for (int i = 0; i < newDeg + 1; ++i) resArr[i] = 0;
 	Polynomial rem = *this;
-	R rem_lead;
-	R divisor_lead = divisor[degS];
+	R remLead;
+	R divisorLead = divisor[degS];
 	while (newDeg >= 0) {
 		// Eliminate the leading coefficient of the remaining polynomial 
-		rem_lead = rem[degF];
-		res_arr[newDeg] = rem_lead / divisor_lead;
-		rem -= Polynomial(res_arr[newDeg], newDeg) * divisor;
+		remLead = rem[degF];
+		resArr[newDeg] = remLead / divisorLead;
+		rem -= Polynomial(resArr[newDeg], newDeg) * divisor;
 		degF = rem.getDegree();
 		newDeg = degF - degS;
 	}
-	Polynomial result(res_arr, degree - degS);
-	util::deallocate(res_arr);
+	Polynomial result(resArr, degree - degS);
+	util::deallocate(resArr);
 	return result;
 }
 
@@ -241,6 +242,7 @@ template <typename R>
 Polynomial<R> Polynomial<R>::operator/=(const Polynomial& divisor) {
 	Polynomial q = polyDiv(divisor);
 	if (*this != q * divisor) {
+		std::cout << *this << " " << q * divisor << "!= 0. Throwing." << std::endl;
 		throw std::invalid_argument("Cannot divide by a polynomial that is no divisor.");
 	}
 	*this = q;
