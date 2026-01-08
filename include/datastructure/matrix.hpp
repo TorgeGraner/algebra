@@ -1,0 +1,237 @@
+#pragma once
+#include <iostream>
+#include <cassert>
+
+#include "util/helper.hpp"
+
+template <typename R> class Matrix;
+template <typename R> void swap(Matrix<R>&, Matrix<R>&);
+
+/* 
+* @brief A class representing a matrix over a given Ring R, no multiplicative inverses are generally required,
+* however if R is not a field, the results of some functions as the inverse matrix will return scaled versions
+* 
+* TODO: 
+* 1) Implement L-R Decomposition, change calcRef
+* 2) Representation for zero-blocks or diagonal/triangular/block/scalar matrices (maybe some sort of quads?)
+* 3) Minimal polynomial for frobenius normal form
+* 4) Print operator
+*/
+template<typename R>
+class Matrix {
+private:
+	R* entries = nullptr;
+	int n = -1; 
+	int m = -1;
+	
+public:
+	//-------------------------------------------------------------------------------------------------------------|
+	// Constructors
+	//-------------------------------------------------------------------------------------------------------------|
+	Matrix() = default;							// Default constructor
+	Matrix(R*, const int, const int);			// Standard constructor
+	Matrix(R, const int = 1);					// Standard constructor
+	Matrix(const Matrix&);						// Copy constructor
+	Matrix(Matrix&&) noexcept;					// Move constructor
+	~Matrix() { util::deallocate(entries); };	// Destructor
+	//-------------------------------------------------------------------------------------------------------------|
+	// Operators
+	//-------------------------------------------------------------------------------------------------------------|
+	// In place arithmetic
+	Matrix operator+=(const Matrix&);
+	Matrix operator-=(const Matrix&);
+	Matrix operator*=(const Matrix&);
+	// Out of place arithmetic
+	friend Matrix operator+(Matrix lhs, const Matrix& rhs) { return lhs += rhs; }
+	friend Matrix operator-(Matrix lhs, const Matrix& rhs) { return lhs -= rhs; }
+	friend Matrix operator*(Matrix lhs, const Matrix& rhs) { return lhs *= rhs; }
+
+	bool operator==(const Matrix<R>&) const;
+	bool operator==(const int&) const;
+	bool operator!=(const Matrix<R>& rhs) const { return !(*this == rhs); }
+	bool operator!=(const int& rhs) const { return !(*this == rhs); }
+
+	Matrix& operator=(const Matrix&);		// Assignment operator
+	Matrix& operator=(Matrix&&) noexcept;	// Move operator
+
+	R& operator()(const int, const int) const;
+
+	friend std::ostream& operator<< <>(std::ostream&, const Matrix&);
+	friend void swap<>(Matrix&, Matrix&);
+
+	const int getN() const { return n; }
+	const int getM() const { return m; }
+};
+
+//-------------------------------------------------------------------------------------------------------------|
+// Constructors
+//-------------------------------------------------------------------------------------------------------------|
+// Standard constructor
+template <typename R>
+Matrix<R>::Matrix(R* _entries, const int n, const int m) : n(n), m(m) {
+	if (n * m != 0) {
+		entries = util::allocate<R>(n * m);
+		std::copy(_entries, _entries + n * m, entries);
+	}
+}
+
+template <typename R>
+Matrix<R>::Matrix(R entry, const int n) : n(n), m(n) {
+	entries = util::allocate<R>(n * m);
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			if (i == j) {
+				entries[m * i + j] = entry;
+			}
+			else {
+				entries[m * i + j] = 0;
+			}
+		}
+	}
+}
+
+// Copy Constructor
+template<typename R>
+Matrix<R>::Matrix(const Matrix<R>& orig) : n(orig.n), m(orig.m) {
+	entries = util::allocate<R>(n * m);
+	std::copy(orig.entries, orig.entries + n * m, entries);
+}
+
+// Move constructor
+template <typename R>
+Matrix<R>::Matrix(Matrix<R>&& src) noexcept : Matrix{} {
+	swap(*this, src);
+}
+
+//-------------------------------------------------------------------------------------------------------------|
+// Operators
+//-------------------------------------------------------------------------------------------------------------|
+template<typename R>
+Matrix<R> Matrix<R>::operator+=(const Matrix<R>& rhs) {
+	if (m != rhs.m && n != rhs.n) {
+		throw std::invalid_argument("Cannot add matrices of different dimensions.");
+	}
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			entries[m * i + j] += rhs(i, j);
+		}
+	}
+	return *this;
+}
+
+template<typename R>
+Matrix<R> Matrix<R>::operator-=(const Matrix<R>& rhs) {
+	if (m != rhs.m && n != rhs.n) {
+		throw std::invalid_argument("Cannot subtract matrices of different dimensions.");
+	}
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			entries[m * i + j] -= rhs(i, j);
+		}
+	}
+	return *this;
+}
+
+// Matrix multiplication
+template<typename R>
+Matrix<R> Matrix<R>::operator*=(const Matrix<R>& multiplicand) {
+	int multM = multiplicand.getM();
+	if (multiplicand.getN() == 1 && multM == 1) {
+		for (int k = 0; k < n * m; ++k) {
+			entries[k] *= multiplicand(0, 0);
+		}
+		return *this;
+	}
+	if (m != multiplicand.getN()) {
+		throw std::invalid_argument("Cannot multiplication matrices with wrong dimensions.");
+	}
+	R* arr = util::allocate<R>(n * multM);
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < multM; ++j) {
+			int h = i * multM + j;
+			arr[h] = 0;
+			for (int k = 0; k < m; ++k) {
+				arr[h] += (*this)(i, k) * multiplicand(k, j);
+			}
+		}
+	}
+	m = multM;
+	util::deallocate<R>(entries);
+	entries = arr;
+	return *this;
+}
+
+// Comparison to another matrix
+template <typename R>
+bool Matrix<R>::operator==(const Matrix<R>& rhs) const {
+	if (n != rhs.n || m != rhs.m) {
+		return false;
+	}
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			if ((*this)(i, j) != rhs(i, j)) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+// Comparison to another matrix
+template <typename R>
+bool Matrix<R>::operator==(const int& rhs) const {
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < m; ++j) {
+			if (i == j) {
+				if ((*this)(i, j) != rhs) return false;
+			}
+			else {
+				if ((*this)(i, j) != 0) return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+// Assignment operator
+template <typename R>
+Matrix<R>& Matrix<R>::operator=(const Matrix<R>& rhs) {
+	Matrix tmp(rhs);
+	swap(*this, tmp);
+	return *this;
+}
+
+// Move operator
+template <typename R>
+Matrix<R>& Matrix<R>::operator=(Matrix<R>&& src) noexcept {
+	Matrix tmp(src);
+	swap(*this, src);
+	return *this;
+}
+
+template <typename R>
+R& Matrix<R>::operator()(const int i, const int j) const {
+	if (0 > i || i >= n || 0 > j || j >= m) {
+		throw std::invalid_argument("Index out of bounds for matrix.");
+	}
+	return entries[m * i + j];
+}
+
+template <typename R>
+std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
+	for (int i = 0; i < obj.n; ++i) {
+		for (int j = 0; j < obj.m; ++j) {
+			os << obj(i, j) << "|";
+		}
+		os << std::endl;
+	}
+	return os;
+}
+
+template <typename R>
+void swap(Matrix<R>& lhs, Matrix<R>& rhs) {
+	std::swap(lhs.n, rhs.n);
+	std::swap(lhs.m, rhs.m);
+	std::swap(lhs.entries, rhs.entries);
+}
