@@ -40,9 +40,9 @@ int main() {
          //2, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 2
          //4, -4, 9, 7, 11, 1, 0, 4, 4, 6, 0, 0, 1, -1, -1, 0, 0, 1, 2, 0, 0, 0, 0, 1, 3
 
-         //25, -16, 30, -44, -12, 13, -7, 18, -26, -6, -18, 12, -21, 36, 12, -9, 6, -12, 21, 6, 11, -8, 15, -22, -3
+         25, -16, 30, -44, -12, 13, -7, 18, -26, -6, -18, 12, -21, 36, 12, -9, 6, -12, 21, 6, 11, -8, 15, -22, -3
 
-         2, 1, 0, 0, 0, 0, -1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 2, 3, 1, 0, 1, 0, -2, -1, 1, 0, -1, 0, 2, 1, 3, 4
+         //2, 1, 0, 0, 0, 0, -1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 2, 3, 1, 0, 1, 0, -2, -1, 1, 0, -1, 0, 2, 1, 3, 4
 
          // no rational roots
 
@@ -60,15 +60,30 @@ int main() {
     int s = (int) sqrt(l);
 
     Fractionalize<Integer>* fValues = util::allocate<Fractionalize<Integer>>(l);
-    for (int i = 0; i < l; ++i) fValues[i] = Integer(values[i]);
-    Matrix<Fractionalize<Integer>> A(fValues, s, s);
-    util::deallocate(fValues);
+    Integer* iValues = util::allocate<Integer>(l);
 
-    std::cout << "To decompose: " << std::endl << A << std::endl;
+    for (int i = 0; i < l; ++i) {
+        fValues[i] = Integer(values[i]);
+        iValues[i] = Integer(values[i]);
+    }
+
+    Matrix<Fractionalize<Integer>> fMat(fValues, s, s);
+    Matrix<Integer> iMat(iValues, s, s);
+    util::deallocate(fValues);
+    util::deallocate(iValues);
+
+    std::cout << "To decompose: " << std::endl << fMat << std::endl;
     try {
-        auto S = decompose(A);
-        auto inv = matOps::inverse(S);
-        std::cout << "Base:" << std::endl << S << std::endl << "Inverse: " << std::endl << inv << std::endl << "Decomposition:" << std::endl << inv * A * S << std::endl;
+        std::cout << "Decomposing with integer coefficients:" << std::endl;
+        auto iBase = decompose(iMat);
+        auto iInv = matOps::inverse(iBase);
+        std::cout << "Base:" << std::endl << iBase << std::endl << "Inverse: " << std::endl << iInv << std::endl << "Decomposition:" << std::endl << iInv * iMat * iBase << std::endl;
+
+        std::cout << "Decomposing with rational coefficients:" << std::endl;
+        auto fBase = decompose(fMat);
+        auto fInv = matOps::inverse(fBase);
+        std::cout << "Base:" << std::endl << fBase << std::endl << "Inverse: " << std::endl << fInv << std::endl << "Decomposition:" << std::endl << fInv * fMat * fBase << std::endl;
+
     }
     catch (std::invalid_argument const& ex) {
         std::cout << "Invalid argument exception: " << ex.what() << std::endl;

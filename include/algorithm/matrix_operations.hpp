@@ -20,6 +20,13 @@ namespace matOps {
 	template <typename R> const Matrix<R> getVec(const Matrix<R>&, int);
 }
 
+/*
+* @brief An implementation of the gaussian elimination algorithm, not requiring multiplicative inverses
+* @param mat the Matrix to reduce
+* @param reduced Returns echelon form if false, and reduced row echelon form if true
+* 
+* @return the echelon form, the rank and the determinant
+*/
 template <typename R>
 const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 	int n = mat.getN();
@@ -30,10 +37,8 @@ const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 			arr[m * i + j] = mat(i, j);
 		}
 	}
-
 	R detNumer = 1;
 	R detDenom = 1;
-
 	int rank = 0;
 	// The current number of reduced columns
 	int numReduced = 0;
@@ -87,7 +92,6 @@ const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 				}
 			}
 		}
-
 		// Switch rows nzRowInd and num
 		if (nzRowInd != numReduced) {
 			for (int k = 0; k < m; ++k) {
@@ -110,7 +114,11 @@ const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 	return res;
 }
 
-// Return the inverse matrix or a scaled version of it in case of a ring
+/*
+* @brief Calculate the inverse matrix or a scaled version of it in case of a ring
+* Calculation is done by row reducing the matrix (mat, I) to (diag, mat^(-1)) where
+* diag is a diagonal matrix
+*/ 
 template <typename R>
 const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	int n = mat.getN();
@@ -119,17 +127,21 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 		throw std::invalid_argument("Cannot find inverse of a non-square matrix.");
 	}
 	Matrix<R> I(1, n);
+	// Get (mat, I)
 	Matrix<R> help = minkSum(mat, I);
+	// Reduce to (diag, mat^(-1))
 	auto rrefRet = rref(help, true);
 	Matrix<R> result = rrefRet.ref;
-
+	// Find least common multiple of elements in the diagonal matrix diag
 	R diagLcm = 1;
 	for (int i = 0; i < n; ++i) {
 		diagLcm *= result(i, i) / util::gcd(diagLcm, result(i, i));
 	}
+	// If diagLcm is zero, the rank of the matrix does not have full rank
 	if (diagLcm == 0) {
 		throw std::invalid_argument("Matrix is not invertible.");
 	}
+	// Scale mat^(-1) according to the lcm and the entry in the diagonal matrix in the corresponding row
 	R* arr = util::allocate<R>(n * m);
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < m; ++j) {
@@ -142,7 +154,7 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	return result;
 }
 
-// Might be missing some constants
+// Calculate the characteristic polynomial of a given matrix
 template <typename R>
 const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 	int n = mat.getN();
@@ -169,11 +181,13 @@ const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 	return result;
 }
 
+// Return the rank
 template <typename R>
 const int matOps::rank(const Matrix<R>& mat) {
 	return rref(mat, false).rank;
 }
 
+// Return the determinant
 template <typename R>
 const R matOps::determinant(const Matrix<R>& mat) {
 	if (mat.getN() != mat.getM()) {
@@ -182,6 +196,9 @@ const R matOps::determinant(const Matrix<R>& mat) {
 	return rref(mat, false).det;
 }
 
+/*
+* @brief Calculate a basis for the kernel of a given matrix
+*/
 template<typename R>
 const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 	int n = phi.getN();
@@ -221,8 +238,7 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 				}
 			}
 			++column;
-		}
-		else {
+		} else {
 			indices[row++] = j;
 		}
 	}
@@ -234,7 +250,7 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 }
 
 /*
-* Complete the column vectors of first to a basis of second. This is done by checking for each vector of other, if it is
+* Complete the column vectors of first to a basis of second. This is done by checking for each vector of second, if it is
 * linearly independent to all vectors of this. If a linearly independent vector is found, add it to the basis and stop
 * if the ranks of the two bases are equal
 */
@@ -298,6 +314,11 @@ const Matrix<R> matOps::completeBasis(const Matrix<R>& first, const Matrix<R>& s
 	return result;
 }
 
+/*
+* @brief Return the minkowski sum of the two matrices
+* 
+* A fancy way of returning (A, B) 
+*/
 template <typename R>
 const Matrix<R> matOps::minkSum(const Matrix<R>& spanA, const Matrix<R>& spanB) {
 	int n = spanA.getN();
@@ -321,6 +342,7 @@ const Matrix<R> matOps::minkSum(const Matrix<R>& spanA, const Matrix<R>& spanB) 
 	return result;
 }
 
+// @brief return the j-th vector of mat
 template<typename R>
 const Matrix<R> matOps::getVec(const Matrix<R>& mat, const int j) {
 	int n = mat.getN();

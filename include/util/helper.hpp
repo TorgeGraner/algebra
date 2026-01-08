@@ -12,6 +12,11 @@ namespace util {
 		return (b == 0) ? a : gcd(b, a % b);
 	}
 
+	/*
+	* @brief A custom wrapper function of allocation using new
+	* @paramn final If set to true print the number of allocated arrays
+	* Used to keep track of the number of allocations for testing if the destructors and constructors of the classes work as intended.
+	*/
 	template <typename R>
 	R* allocate(int k, bool final = false) {
 		static int cnt = 0;
@@ -26,6 +31,11 @@ namespace util {
 		}
 	}
 
+	/*
+	* @brief A custom wrapper function of deallocation using delete[]
+	* @param final If set to true, print the number of deallocated arrays
+	* Used to keep track of the number of deallocations for testing if the destructors and constructors of the classes work as intended.
+	*/
 	template <typename R>
 	void deallocate(R* ptr, bool final = false) {
 		static int cnt = 0;

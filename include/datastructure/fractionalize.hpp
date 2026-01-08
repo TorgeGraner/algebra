@@ -3,6 +3,9 @@
 template <typename R> class Fractionalize;
 template <typename R> std::ostream& operator<<(std::ostream&, const Fractionalize<R>&);
 template <typename R>
+/*
+* @brief A datastructure implementing the field of fractions with coefficients in R
+*/
 class Fractionalize {
 	private:
 		R numerator;
@@ -11,28 +14,37 @@ class Fractionalize {
 		void reduce();
 
 	public:
+		//-------------------------------------------------------------------------------------------------------------|
+		// Constructors
+		//-------------------------------------------------------------------------------------------------------------|
 		Fractionalize() = default;
 		Fractionalize(R);
 		Fractionalize(int);
 		Fractionalize(R, R);
 
+		//-------------------------------------------------------------------------------------------------------------|
+		// Operators
+		//-------------------------------------------------------------------------------------------------------------|
 		Fractionalize operator+=(const Fractionalize&);
 		Fractionalize operator-=(const Fractionalize&);
 		Fractionalize operator*=(const Fractionalize&);
 		Fractionalize operator/=(const Fractionalize&);
 		Fractionalize operator%=(const Fractionalize&);
 
-		bool operator==(const Fractionalize<R>&) const;
-		bool operator!=(const Fractionalize<R>& rhs) const { return !(*this == rhs); }
-
-		const R getNumerator() const { return numerator; }
-		const R getDenominator() const { return denominator; }
-
 		friend Fractionalize operator+(Fractionalize lhs, const Fractionalize& rhs) { return lhs += rhs; }
 		friend Fractionalize operator-(Fractionalize lhs, const Fractionalize& rhs) { return lhs -= rhs; }
 		friend Fractionalize operator*(Fractionalize lhs, const Fractionalize& rhs) { return lhs *= rhs; }
 		friend Fractionalize operator/(Fractionalize lhs, const Fractionalize& rhs) { return lhs /= rhs; }
 		friend Fractionalize operator%(Fractionalize lhs, const Fractionalize& rhs) { return lhs %= rhs; }
+
+		bool operator==(const Fractionalize<R>&) const;
+		bool operator!=(const Fractionalize<R>& rhs) const { return !(*this == rhs); }
+
+		//-------------------------------------------------------------------------------------------------------------|
+		// Getters
+		//-------------------------------------------------------------------------------------------------------------|
+		const R getNumerator() const { return numerator; }
+		const R getDenominator() const { return denominator; }
 };
 
 template<typename R>

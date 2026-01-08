@@ -15,7 +15,7 @@ private:
 	int degree = -1;
 
 	Polynomial polyDiv(const Polynomial&) const;	// Recursive polynomial division
-	void normalize();
+	void normalize();								// Divide by gcd of coefficients
 
 public:
 	//-------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ public:
 	Polynomial() = default;						// Default constructor
 	Polynomial(R*, const int);					// Standard constructor
 	Polynomial(R, const int = 0);				// Monomial constructor
-	Polynomial(int);							// 
+	Polynomial(int);							// Constant integer polynomial constructor
 	Polynomial(const Polynomial&);				// Copy constructor
 	Polynomial(Polynomial&&) noexcept;			// Move constructor
 
@@ -38,25 +38,14 @@ public:
 	Polynomial operator/=(const Polynomial&);
 	Polynomial operator%=(const Polynomial&);
 
-	Polynomial& operator=(const Polynomial&);		// Assignment operator
-	Polynomial& operator=(Polynomial&&) noexcept;	// Move operator
-
-	const R& operator[](const int) const;			// Access operator
-	//----------------------------------------------//-------------------------------------------------------------
-	// Others
-	//------------------------------------------//-----------------------------------------------------------------
-	int getDegree() const { return degree; };	// Get the degree
-	R map(const R&) const;						// Return value of this at specific point
-	R coeffGcd() const;
-	Polynomial derivative() const;
-	//------------------------------------------//-----------------------------------------------------------------
-	// Friends
-	//-------------------------------------------------------------------------------------------------------------
 	friend Polynomial operator+(Polynomial lhs, const Polynomial& rhs) { return lhs += rhs; }
 	friend Polynomial operator-(Polynomial lhs, const Polynomial& rhs) { return lhs -= rhs; }
 	friend Polynomial operator*(Polynomial lhs, const Polynomial& rhs) { return lhs *= rhs; }
 	friend Polynomial operator/(Polynomial lhs, const Polynomial& rhs) { return lhs /= rhs; }
 	friend Polynomial operator%(Polynomial lhs, const Polynomial& rhs) { return lhs %= rhs; }
+
+	Polynomial& operator=(const Polynomial&);		// Assignment operator
+	Polynomial& operator=(Polynomial&&) noexcept;	// Move operator
 
 	friend bool operator==(const Polynomial& lhs, const Polynomial& rhs) {
 		if (lhs.degree != rhs.degree) return false;
@@ -64,9 +53,18 @@ public:
 			if (lhs[k] != rhs[k]) return false;
 		return true;
 	}
-	friend bool operator!=(const Polynomial& lhs, const Polynomial& rhs) { return !(lhs == rhs); }
+	const R& operator[](const int) const;			// Access operator
 
+	friend bool operator!=(const Polynomial& lhs, const Polynomial& rhs) { return !(lhs == rhs); }
 	friend std::ostream& operator<< <>(std::ostream&, const Polynomial&);
+	//----------------------------------------------//-------------------------------------------------------------
+	// Others
+	//------------------------------------------//-----------------------------------------------------------------
+	int getDegree() const { return degree; };	// Get the degree
+	R map(const R&) const;						// Return value of this at specific value
+	R coeffGcd() const;							// Return gcd of all coefficients
+	Polynomial derivative() const;				// Return the algebraic derivative
+
 	friend void swap<>(Polynomial&, Polynomial&);
 };
 
@@ -74,10 +72,16 @@ public:
 // Private
 //-------------------------------------------------------------------------------------------------------------
 /*
-* By polynomial division, calculate a polynomial result, such that *this = divisor * result + rest.
-* The rest in this will possess a degree less than result. Therefore result is the scaled quotient.
-* Input: Polynomial q, Pointer to output variable scale
-* Output: Polynomial p such that scale * (*this) = p * q + r with deg(r) < deg(*this)
+* Input: Polynomial q
+* Output: Polynomial p such that *this = p * q + r with deg(r) < deg(*this)
+* 
+* By basic polynomial division, calculate a polynomial result, such that *this = divisor * result + rest.
+* The rest in this will possess a degree less than result.
+* 
+* WARNING: This function is unstable and should only be used when it is known that the divisor divides *this
+*		   Can, even in low dimensions, lead to an exponentially growing number of digits, overflowing standard int
+* TODO: Catch divisor not being a divisor
+*		Workaround for possible division error by divisor_lead
 */
 template<typename R>
 Polynomial<R> Polynomial<R>::polyDiv(const Polynomial& divisor) const {
@@ -90,12 +94,11 @@ Polynomial<R> Polynomial<R>::polyDiv(const Polynomial& divisor) const {
 	R rem_lead;
 	R divisor_lead = divisor[degS];
 	while (newDeg >= 0) {
+		// Eliminate the leading coefficient of the remaining polynomial 
 		rem_lead = rem[degF];
-		// TODO: Catch division or multiply by scalar
 		res_arr[newDeg] = rem_lead / divisor_lead;
 		rem -= Polynomial(res_arr[newDeg], newDeg) * divisor;
 		degF = rem.getDegree();
-
 		newDeg = degF - degS;
 	}
 	Polynomial result(res_arr, degree - degS);
@@ -103,6 +106,7 @@ Polynomial<R> Polynomial<R>::polyDiv(const Polynomial& divisor) const {
 	return result;
 }
 
+// Divide all coefficients by coefficient gcd
 template<typename R>
 void Polynomial<R>::normalize() {
 	if (degree != -1) {
@@ -137,7 +141,7 @@ Polynomial<R>::Polynomial(R coeff, const int deg) : degree(deg) {
 	}
 }
 
-// 
+// Constant integer polynomial constructor
 template <typename R>
 Polynomial<R>::Polynomial(int coeff) : degree(0) {
 	if (coeff == 0) {
@@ -243,6 +247,10 @@ Polynomial<R> Polynomial<R>::operator/=(const Polynomial& divisor) {
 	return *this;
 }
 
+/* 
+* A faulty implementation of the modulo operator used to trick the gcd. A correct implementation relying on polynomial division
+* leads to exponentially growing coefficients, slowing down the program and resulting in possible overflow.
+*/
 template <typename R>
 Polynomial<R> Polynomial<R>::operator%=(const Polynomial& modulus) {
 	if (modulus.getDegree() == -1) throw std::invalid_argument("Cannot modulate by zero.");
@@ -250,6 +258,7 @@ Polynomial<R> Polynomial<R>::operator%=(const Polynomial& modulus) {
 	return *this;
 }
 
+// Access operator for coefficients
 template <typename R>
 const R& Polynomial<R>::operator[](const int idx) const {
 	if (idx < 0 || idx > degree) {
@@ -274,6 +283,10 @@ Polynomial<R>& Polynomial<R>::operator=(Polynomial&& src) noexcept {
 	return *this;
 }
 
+//-------------------------------------------------------------------------------------------------------------
+// Others
+//-------------------------------------------------------------------------------------------------------------
+// Return value at given value
 template <typename R>
 R Polynomial<R>::map(const R& x) const {
 	R ret = 0;
@@ -284,6 +297,7 @@ R Polynomial<R>::map(const R& x) const {
 	return ret;
 }
 
+// Return algebraic derivative
 template <typename R>
 Polynomial<R> Polynomial<R>::derivative() const {
 	if (degree < 1) return 0;
@@ -296,6 +310,7 @@ Polynomial<R> Polynomial<R>::derivative() const {
 	return result;
 }
 
+// Return gcd of all coefficients
 template <typename R>
 R Polynomial<R>::coeffGcd() const {
 	if (degree == -1) return 0;
@@ -308,9 +323,7 @@ R Polynomial<R>::coeffGcd() const {
 	return res;
 }
 
-//-------------------------------------------------------------------------------------------------------------
-// Out of class functions
-//-------------------------------------------------------------------------------------------------------------
+// Print operator
 template <typename R>
 std::ostream& operator<< <>(std::ostream& os, const Polynomial<R>& obj) {
 	const int deg = obj.getDegree();

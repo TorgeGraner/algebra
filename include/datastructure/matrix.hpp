@@ -15,7 +15,7 @@ template <typename R> void swap(Matrix<R>&, Matrix<R>&);
 * 1) Implement L-R Decomposition, change calcRef
 * 2) Representation for zero-blocks or diagonal/triangular/block/scalar matrices (maybe some sort of quads?)
 * 3) Minimal polynomial for frobenius normal form
-* 4) Print operator
+* 4) Improve Print operator
 */
 template<typename R>
 class Matrix {
@@ -33,15 +33,15 @@ public:
 	Matrix(R, const int = 1);					// Standard constructor
 	Matrix(const Matrix&);						// Copy constructor
 	Matrix(Matrix&&) noexcept;					// Move constructor
+
 	~Matrix() { util::deallocate(entries); };	// Destructor
 	//-------------------------------------------------------------------------------------------------------------|
 	// Operators
 	//-------------------------------------------------------------------------------------------------------------|
-	// In place arithmetic
 	Matrix operator+=(const Matrix&);
 	Matrix operator-=(const Matrix&);
 	Matrix operator*=(const Matrix&);
-	// Out of place arithmetic
+
 	friend Matrix operator+(Matrix lhs, const Matrix& rhs) { return lhs += rhs; }
 	friend Matrix operator-(Matrix lhs, const Matrix& rhs) { return lhs -= rhs; }
 	friend Matrix operator*(Matrix lhs, const Matrix& rhs) { return lhs *= rhs; }
@@ -51,14 +51,19 @@ public:
 	bool operator!=(const Matrix<R>& rhs) const { return !(*this == rhs); }
 	bool operator!=(const int& rhs) const { return !(*this == rhs); }
 
+	R& operator()(const int, const int) const;
+
+	// Functions required since the destructor is implemented
 	Matrix& operator=(const Matrix&);		// Assignment operator
 	Matrix& operator=(Matrix&&) noexcept;	// Move operator
 
-	R& operator()(const int, const int) const;
-
-	friend std::ostream& operator<< <>(std::ostream&, const Matrix&);
 	friend void swap<>(Matrix&, Matrix&);
 
+	friend std::ostream& operator<< <>(std::ostream&, const Matrix&);
+
+	//-------------------------------------------------------------------------------------------------------------|
+	// Getters
+	//-------------------------------------------------------------------------------------------------------------|
 	const int getN() const { return n; }
 	const int getM() const { return m; }
 };
@@ -75,6 +80,7 @@ Matrix<R>::Matrix(R* _entries, const int n, const int m) : n(n), m(m) {
 	}
 }
 
+// Diagonal quadratic matrix constructor
 template <typename R>
 Matrix<R>::Matrix(R entry, const int n) : n(n), m(n) {
 	entries = util::allocate<R>(n * m);
@@ -177,7 +183,7 @@ bool Matrix<R>::operator==(const Matrix<R>& rhs) const {
 	return true;
 }
 
-// Comparison to another matrix
+// Check if matrix is scaled identity matrix
 template <typename R>
 bool Matrix<R>::operator==(const int& rhs) const {
 	for (int i = 0; i < n; ++i) {
@@ -192,7 +198,6 @@ bool Matrix<R>::operator==(const int& rhs) const {
 	}
 	return true;
 }
-
 
 // Assignment operator
 template <typename R>
@@ -210,6 +215,7 @@ Matrix<R>& Matrix<R>::operator=(Matrix<R>&& src) noexcept {
 	return *this;
 }
 
+// Getter for j-th entry in i-th row
 template <typename R>
 R& Matrix<R>::operator()(const int i, const int j) const {
 	if (0 > i || i >= n || 0 > j || j >= m) {
@@ -218,6 +224,7 @@ R& Matrix<R>::operator()(const int i, const int j) const {
 	return entries[m * i + j];
 }
 
+// Printing operator
 template <typename R>
 std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
 	for (int i = 0; i < obj.n; ++i) {
