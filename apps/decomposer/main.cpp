@@ -98,6 +98,8 @@ int main() {
 
     util::deallocate<Integer>(nullptr, true);
     util::deallocate<Fractionalize<Integer>>(nullptr, true);
+    int x = 0;
+    std::cin >> x;
 }
 
 Matrix<int> fullBipartite(int n, int m) {
