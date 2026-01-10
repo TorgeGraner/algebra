@@ -1,4 +1,4 @@
 project(apps)
 
-### Add all applications
+### Add the application
 add_subdirectory(decomposer)
