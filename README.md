@@ -1,7 +1,7 @@
 # Algebra
 Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in an integral domain using exact arithmetic. 
 
-Currently decomposes a given integer matrix over ℤ and ℚ.
+Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $𝔽_p$.
 
 ## Build
 In project directory:
@@ -55,6 +55,8 @@ A:=\begin{bmatrix}
 ```
 
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
+
+The characteristic polynomial can be calculated in two ways. The naive way as $$p(x)=\det(A-x*I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
 
 ## Notes
 Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
