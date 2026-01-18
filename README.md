@@ -1,5 +1,5 @@
 # Algebra
-Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in a ring of characteristic zero using exact arithmetic. 
+Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in an integral domain using exact arithmetic. 
 
 Currently decomposes a given integer matrix over ℤ and ℚ.
 
@@ -8,10 +8,10 @@ In project directory:
 * Create build subdirectory (e.g. ```mkdir build```)
 
 In build directory:
-* Invoke ```cmake ..``` and ```make```
+* Simply invoke ```cmake ..``` and ```make```
 
 ## Execution
-Enter a matrix in Form of a string. E.g. this could either
+Enter a matrix in form of a string, e.g. this could be either
 
 ```25 -16 30 -44 -12 13 -7 18 -26 -6 -18 12 -21 36 12 -9 6 -12 21 6 11 -8 15 -22 -3```
 
@@ -28,7 +28,7 @@ or
 as long the number of integers entered is a perfect square.
 
 ## Algorithm
-The algorithm calculates the characteristic polynomial of the given matrix and searches (by brute force) for a factorization. For each linear factor, it determines a base for the corresponding generalized Eigenspaces and combines them to a complete base. If the characteristic polynomial does not break down completely, return a partial base.
+The algorithm calculates the characteristic polynomial of the given matrix and searches (by brute force) for a factorization. For each linear factor, it determines a base for the corresponding generalized eigenspaces and combines them to a complete base. If the characteristic polynomial does not break down completely, return a partial base.
 
 Since some functions, such as matrix inversion, require multiplicative inverses, when using a Ring R, results might have to be multiplied by a scalar. Take for example the following integer matrix, which is invertible over the rationals but not over the integers:
 
@@ -57,9 +57,9 @@ A:=\begin{bmatrix}
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
 
 ## Notes
-Works with any ring of charactersitic 0 realized as class correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
+Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
 
-Note that this programs is primarily used to get familiar with C++ template- and memorymanagement. I am aware that direct (de-)allocation of memory and use of raw pointers is not incentivized.
+Note that this programs is primarily used to get familiar with C++ template and memory management. I am aware that direct (de-)allocation of memory and use of raw pointers is not incentivized.
 
 All datastructures are defined in the .hpp, since template classes cannot be seperated into .hpp and .cpp. The problem comes from the compiler not being able to infer the same template parameter for .hpp and .cpp. This problem could be fixed by always including the corresponding .cpp together with the .hpp.
 
