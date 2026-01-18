@@ -156,7 +156,7 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 }
 
 /*
-* Calculates the characteristic Polynomial fairly efficient in a ring of characteristic zero.
+* An implementation of the Faddeev–LeVerrier algorithm to calculate the characteristic Polynomial fairly efficient in a ring of characteristic zero.
 * WARNING: Works if and only if the ring has characteristic zero
 */
 template <typename R>

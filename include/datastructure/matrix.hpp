@@ -227,10 +227,32 @@ R& Matrix<R>::operator()(const int i, const int j) const {
 // Printing operator
 template <typename R>
 std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
+	std::vector<int> colSizes;
+	std::ostringstream helpOs; 
+	// Calculate max size of spaces in each column
+	for (int j = 0; j < obj.m; ++j) {
+		int mSize = 0;
+		for (int i = 0; i < obj.n; ++i) {
+			auto start = helpOs.tellp();
+			helpOs << obj(i, j);
+			auto end = helpOs.tellp();
+			mSize = std::max(mSize, int(end - start));
+			helpOs.clear();
+		}
+		colSizes.push_back(mSize);
+	}
+	// Print and fill
 	for (int i = 0; i < obj.n; ++i) {
 		for (int j = 0; j < obj.m; ++j) {
-			os << obj(i, j) << "|";
+			auto start = helpOs.tellp();
+			helpOs << obj(i, j);
+			auto end = helpOs.tellp();
+
+			os << obj(i, j);
+			int fill = colSizes[j] - int(end - start) + 1;
+			for (int k = 0; k < fill; ++k) os << " ";
 		}
+		os.flush();
 		os << std::endl;
 	}
 	return os;
