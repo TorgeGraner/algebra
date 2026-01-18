@@ -5,10 +5,11 @@ Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $
 
 ## Build
 In project directory:
-* Create build subdirectory (e.g. ```mkdir build```)
+* Create debug/release subdirectory (e.g. ```mkdir release``` or ```mkdir release```)
 
-In build directory:
-* Simply invoke ```cmake ..``` and ```make```
+In corresponding subdirectory:
+* Invoke ```cmake .. -DCMAKE_BUILD_TYPE = Release``` or ```cmake .. -DCMAKE_BUILD_TYPE = Debug```
+* Then ```make```
 
 ## Execution
 Enter a matrix in form of a string, e.g. this could be either
