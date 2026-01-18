@@ -14,7 +14,7 @@ private:
 	R* coeffs = nullptr;
 	int degree = -1;
 
-	Polynomial polyDiv(const Polynomial&) const;	// Recursive polynomial division
+	bool polyDiv(const Polynomial&, const Polynomial&, Polynomial&) const;	// Recursive polynomial division
 	void normalize();								// Divide by gcd of coefficients
 
 public:
@@ -84,27 +84,40 @@ public:
 *		Workaround for possible division error by divisor_lead
 */
 template<typename R>
-Polynomial<R> Polynomial<R>::polyDiv(const Polynomial& divisor) const {
-	int degF = degree;
+bool Polynomial<R>::polyDiv(const Polynomial<R>& dividend, const Polynomial& divisor, Polynomial& res) const {
+	int degF = dividend.getDegree();
 	int degS = divisor.getDegree();
 	int newDeg = degF - degS;
-	if (degF < 0) return 0;
+
+	if (degS < 0 || newDeg < 0) return false;
+	if (degF < 0) {
+		res = 0;
+		return true;
+	}
+
 	R* resArr = util::allocate<R>(newDeg + 1);
 	for (int i = 0; i < newDeg + 1; ++i) resArr[i] = 0;
-	Polynomial rem = *this;
+	Polynomial rem = dividend;
 	R remLead;
 	R divisorLead = divisor[degS];
+
 	while (newDeg >= 0) {
 		// Eliminate the leading coefficient of the remaining polynomial 
 		remLead = rem[degF];
+		if (remLead % divisorLead != 0) return false;
 		resArr[newDeg] = remLead / divisorLead;
+		// Enforce lead(remainder) * X^deg(remainder) - (lead(divisor) * X^deg(divisor)) * (lead(remainder) / lead(divisor)) * X^(deg(remainder) - deg(divisor)) = 0
 		rem -= Polynomial(resArr[newDeg], newDeg) * divisor;
+		if(rem.getDegree() >= degF) {
+			std::cout << dividend << " " << divisor << " " << rem << std::endl;
+			return false;
+		}
 		degF = rem.getDegree();
 		newDeg = degF - degS;
 	}
-	Polynomial result(resArr, degree - degS);
+	res = Polynomial(resArr, degree - degS);
 	util::deallocate(resArr);
-	return result;
+	return true;
 }
 
 // Divide all coefficients by coefficient gcd
@@ -240,10 +253,11 @@ Polynomial<R> Polynomial<R>::operator*=(const Polynomial& multiplicand) {
 
 template <typename R>
 Polynomial<R> Polynomial<R>::operator/=(const Polynomial& divisor) {
-	Polynomial q = polyDiv(divisor);
-	if (*this != q * divisor) {
-		std::cout << *this << " " << q * divisor << "!= 0. Throwing." << std::endl;
-		throw std::invalid_argument("Cannot divide by a polynomial that is no divisor.");
+	Polynomial q;
+	if (*this == 0) return 0;
+	if (!polyDiv(*this, divisor, q)) {
+		std::cout << *this << " " << divisor << std::endl;
+		throw std::invalid_argument("Error in polynomial division.");
 	}
 	*this = q;
 	return *this;
@@ -256,8 +270,13 @@ Polynomial<R> Polynomial<R>::operator/=(const Polynomial& divisor) {
 template <typename R>
 Polynomial<R> Polynomial<R>::operator%=(const Polynomial& modulus) {
 	if (modulus.getDegree() == -1) throw std::invalid_argument("Cannot modulate by zero.");
-	if (*this != 0) return 0; // Trick gcd
-	return *this;
+	if (modulus == 1) {
+		*this = 0;
+		return *this;
+	} else {
+		*this = 1;
+		return *this; // Trick gcd
+	}
 }
 
 // Access operator for coefficients

@@ -61,7 +61,8 @@ bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>& factor) {
 template <typename R>
 Matrix<R> decompose(Matrix<R>& A) {
 	int n = A.getN();
-	Polynomial<R> cPoly = matOps::charPoly(A);
+	Polynomial<R> cPoly = matOps::charPolyNaive(A);
+	std::cout << "Characteristic polynomial: " << cPoly << std::endl;
 	// Calculate factorization of the characteristic polynomial 
 	Matrix<R> jordanBase = Matrix<R>(nullptr, n, 0);
 	std::vector<R> eigenvalues;

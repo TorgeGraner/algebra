@@ -8,12 +8,15 @@
 #include "datastructure/fractionalize.hpp"
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
+#include "datastructure/modp.hpp"
 
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
 
 template<typename R> bool parseToMatrix(std::string, Matrix<R>&);
 Matrix<int> fullBipartite(int n, int m);
+
+const int p = 101;
 
 int main() {
     while(true) {
@@ -27,7 +30,9 @@ int main() {
 
         Matrix<Integer> iMat;
         Matrix<Fractionalize<Integer>> fMat;
-        if (!parseToMatrix<Fractionalize<Integer>>(str, fMat) || !parseToMatrix<Integer>(str, iMat)) {
+        Matrix<ModP<p>> mMat;
+
+        if (!parseToMatrix<Fractionalize<Integer>>(str, fMat) || !parseToMatrix<Integer>(str, iMat) || !parseToMatrix<ModP<p>>(str, mMat)) {
             std::cout << "Erroneous matrix entered"<< std::endl;
             continue;
         }
@@ -45,6 +50,12 @@ int main() {
         auto fBase = decompose(fMat);
         auto fInv = matOps::inverse(fBase);
         std::cout << "Base:" << std::endl << fBase << std::endl << "Inverse: " << std::endl << fInv << std::endl << "Decomposition:" << std::endl << fInv * fMat * fBase << std::endl;
+
+        std::cout << "Decomposing with mod " << p << " coefficients:" << std::endl;
+        auto mBase = decompose(mMat);
+        auto mInv = matOps::inverse(mBase);
+        std::cout << "Base:" << std::endl << mBase << std::endl << "Inverse: " << std::endl << mInv << std::endl << "Decomposition:" << std::endl << mInv * mMat * mBase << std::endl;
+
     }
     std::cout << "Finished" << std::endl;
 

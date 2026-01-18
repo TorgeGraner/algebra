@@ -12,6 +12,7 @@ namespace matOps {
 
 	template <typename R> const Matrix<R> inverse(const Matrix<R>&);
 	template <typename R> const Polynomial<R> charPoly(const Matrix<R>&);
+	template <typename R> const Polynomial<R> charPolyNaive(const Matrix<R>&);
 	template <typename R> const int rank(const Matrix<R>&);
 	template <typename R> const R determinant(const Matrix<R>&);
 	template <typename R> const Matrix<R> kernelBasis(const Matrix<R>&);
@@ -154,7 +155,10 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	return result;
 }
 
-// Calculate the characteristic polynomial of a given matrix
+/*
+* Calculates the characteristic Polynomial fairly efficient in a ring of characteristic zero.
+* WARNING: Works if and only if the ring has characteristic zero
+*/
 template <typename R>
 const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 	int n = mat.getN();
@@ -174,11 +178,30 @@ const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 		for (int j = 0; j < n; ++j) {
 			arr[n - k] += C(j, j);
 		}
+		// Might throw in characteristik != 0
 		arr[n - k] /= (-k);
 	}
 	Polynomial<R> result(arr, n);
 	util::deallocate(arr);
 	return result;
+}
+
+/* 
+* Calculates the characteristic polynomial of a matrix very inefficiently, but also works in characteristic zero
+* WARNING: Can lead to serious problems concerning integer overflow and can not be considered stable
+*/
+template <typename R>
+const Polynomial<R> matOps::charPolyNaive(const Matrix<R>& mat) {
+	int n = mat.getN();
+	Polynomial<R>* arr = util::allocate<Polynomial<R>>(mat.getN() * mat.getM());
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < n; ++j) {
+			arr[n * i + j] = Polynomial<R>(mat(i, j));
+		}
+	}
+	auto hMat = Matrix<Polynomial<R>>(arr, n, n) - Matrix<Polynomial<R>>(Polynomial<R>(1, 1), n);
+	util::deallocate(arr);
+	return matOps::determinant(hMat);
 }
 
 // Return the rank
@@ -206,6 +229,7 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 	auto help = rref(phi, true);
 	Matrix<R> phiRref = help.ref;
 	if (help.rank == m) {
+		std::cout << phi << std::endl << help.ref;
 		throw std::invalid_argument("Cannot calculate basis, phi is injective.");
 	}
 	// Row indicates the current row in the rref, column counts the current number of vectors in the incomplete basis
