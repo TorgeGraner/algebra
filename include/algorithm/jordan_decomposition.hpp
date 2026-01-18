@@ -6,7 +6,7 @@
 
 #include "algorithm/matrix_operations.hpp"
 
-template <typename R> bool getFactor(const Polynomial<R>&, Polynomial<R>*);
+template <typename R> bool getFactor(const Polynomial<R>&, Polynomial<R>&);
 template <typename R> Matrix<R> decompose(Matrix<R>&);
 
 
@@ -19,18 +19,17 @@ template <typename R> Matrix<R> decompose(Matrix<R>&);
 * TODO: Improve everything
 */
 template <typename R>
-bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>* factor) {
-	if (factor == nullptr) throw std::invalid_argument("Nullpointer invalid as argument.");
+bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>& factor) {
 	if (toFactor.getDegree() == -1) return false;
 	Polynomial<R> X(1, 1);
 	// If the constant term is zero, X is a factor
 	if (toFactor[0] == 0) {
-		*factor = X;
+		factor = X;
 		return true;
 	}
 	// If toFactor is of the Form aX + b return X + b/a 
 	if (toFactor.getDegree() == 1) {
-		*factor = X + Polynomial<R>(toFactor[0] / toFactor[1]);					// TODO: Possible error, rather return aX + b
+		factor = X + Polynomial<R>(toFactor[0] / toFactor[1]);					// TODO: Possible error, rather return aX + b
 		return true;
 	}
 	// If the degree if of toFactor is 2, return its roots by the abc-formula
@@ -40,7 +39,7 @@ bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>* factor) {
 		const R& c = toFactor[0];
 
 		if (b * b - a * c * 4 == 0) {
-			*factor = X + Polynomial<R>(b / (a * 2));							// TODO: Possible error
+			factor = X + Polynomial<R>(b / (a * 2));							// TODO: Possible error
 			return true;
 		}
 	}
@@ -48,7 +47,7 @@ bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>* factor) {
 	for (int tVal = -20; tVal <= 20; ++tVal) {
 		R val(tVal);
 		if (toFactor.map(val) == 0) {
-			*factor = X - Polynomial<R>(val);
+			factor = X - Polynomial<R>(val);
 			return true;
 		}
 	}
@@ -66,14 +65,14 @@ Matrix<R> decompose(Matrix<R>& A) {
 	// Calculate factorization of the characteristic polynomial 
 	Matrix<R> jordanBase = Matrix<R>(nullptr, n, 0);
 	std::vector<R> eigenvalues;
-	Polynomial<R>* currFactor = new Polynomial<R>();
+	Polynomial<R> currFactor;
 
 	while (getFactor(cPoly, currFactor)) {
-		R eig = (*currFactor)[0] * (-1);
+		R eig = currFactor[0] * (-1);
 		// Calculate the algebraic multiplicity of the current eigenvalue
 		int alg_mult = 0;
 		while (cPoly.map(eig) == 0) {
-			cPoly /= *currFactor;
+			cPoly /= currFactor;
 			++alg_mult;
 		}
 		std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << std::endl;
@@ -88,7 +87,7 @@ Matrix<R> decompose(Matrix<R>& A) {
 			complements.push_back(matOps::completeBasis(lastKernel, help));
 			lastKernel = help;
 		}
-		for (int i = complements.size() - 1; i >= 0; --i) {
+		for (int i = (int) complements.size() - 1; i >= 0; --i) {
 			// Add all jordan chains of remaining vectors
 			while (complements[i].getM() != 0) {
 				Matrix<R> vect = matOps::getVec(complements[i], complements[i].getM() - 1);
@@ -102,6 +101,5 @@ Matrix<R> decompose(Matrix<R>& A) {
 			}
 		}
 	}
-	delete currFactor;
 	return matOps::minkSum(jordanBase, matOps::completeBasis(jordanBase, Matrix<R>(1, n)));
 }

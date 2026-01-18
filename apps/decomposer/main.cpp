@@ -12,7 +12,7 @@
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
 
-template<typename R> Matrix<R> parseToMatrix(std::string);
+template<typename R> bool parseToMatrix(std::string, Matrix<R>&);
 Matrix<int> fullBipartite(int n, int m);
 
 int main() {
@@ -25,8 +25,12 @@ int main() {
             str += line + " ";
         } while (!line.empty());
 
-        auto fMat = parseToMatrix<Fractionalize<Integer>>(str);
-        auto iMat = parseToMatrix<Integer>(str);
+        Matrix<Integer> iMat;
+        Matrix<Fractionalize<Integer>> fMat;
+        if (!parseToMatrix<Fractionalize<Integer>>(str, fMat) || !parseToMatrix<Integer>(str, iMat)) {
+            std::cout << "Erroneous matrix entered"<< std::endl;
+            continue;
+        }
 
         if (fMat.getM() == 0) break;
 
@@ -56,23 +60,24 @@ int main() {
 }
 
 template<typename R>
-Matrix<R> parseToMatrix(std::string str) {
+bool parseToMatrix(std::string str, Matrix<R>& result) {
     // Get dimension
     int dim_sq = 0;
     int num = 0;
     int cnt = 0;
     std::istringstream is(str);
     while (is >> num) dim_sq++;
+    int dim = (int) std::sqrt(dim_sq);
+    if (dim * dim != dim_sq) return false;
 
     // Get values
     R* values = util::allocate<R>(dim_sq);
     is = std::istringstream (str);
     while (is >> num) values[cnt++] = num;
 
-    int dim = (int) std::sqrt(dim_sq);
-    Matrix<R> result(values, dim, dim);
+    result = Matrix<R>(values, dim, dim);
     util::deallocate(values);
-    return result;
+    return true;
 }
 
 Matrix<int> fullBipartite(int n, int m) {
