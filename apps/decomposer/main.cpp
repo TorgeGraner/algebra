@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <sstream>
 
 #include "util/helper.hpp"
 
@@ -11,68 +12,26 @@
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
 
-
+template<typename R> Matrix<R> parseToMatrix(std::string);
 Matrix<int> fullBipartite(int n, int m);
 
 int main() {
-    int values[] = {
+    while(true) {
+        std::string line;
+        std::string str = "";
+        std::cout << "Input Matrix, enter with line break, exit with empty matrix:\n"; 
+        do {
+            getline(std::cin, line);
+            str += line + " ";
+        } while (!line.empty());
 
-        // Diagonalizable
+        auto fMat = parseToMatrix<Fractionalize<Integer>>(str);
+        auto iMat = parseToMatrix<Integer>(str);
 
-        //-4, -4, 8, -4, 2, 4, 8, 4, -4
-        //1, 0, 1, 0, 1, 1, 1, 1, 0
-        //1, 2, 0, 0, 3, 0, 2, -4, 2
-        //1, 3, 7, 2, 2, 7, 2, 3, 6
+        if (fMat.getM() == 0) break;
 
-        //4, 0, 0, 0, 0, 4, 0, 0, 1, -4, -4, 0, -1, 2, 0, -4
-        //4, -9, 6, 12, 0, -1, 4, 6, 2, -11, 8, 16, -1, 3, 0, -1
+        std::cout << "Decomposing matrix: " << std::endl << fMat << std::endl;
 
-        //0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0
-
-        // Trigonalizable:
-
-         //1, -1, 1, -1, 0, -2, 0, -3, 2, 3, 0, 3, 1, 5, -1, 6
-         //5, 4, 2, 1, 0, 1, -1, -1, -1, -1, 3, 0, 1, 1, -1, 2
-
-         //1, 2, 2, 1, -4, -1, 0, 1, -2, 2, -3, 2, 6, 2, -5, -3, -1, 3, 2, -2, -4, -1, 4, 0, 0
-         //1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 0, 0, 1, 2, 3, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1
-         //2, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 2
-         //4, -4, 9, 7, 11, 1, 0, 4, 4, 6, 0, 0, 1, -1, -1, 0, 0, 1, 2, 0, 0, 0, 0, 1, 3
-
-         25, -16, 30, -44, -12, 13, -7, 18, -26, -6, -18, 12, -21, 36, 12, -9, 6, -12, 21, 6, 11, -8, 15, -22, -3
-
-         //2, 1, 0, 0, 0, 0, -1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 2, 3, 1, 0, 1, 0, -2, -1, 1, 0, -1, 0, 2, 1, 3, 4
-
-         // not enough integer roots
-
-         //2, 1, 1, 1, -2, 1, 1, 1, 0, -1, 1, 0, 2, 0, -1, 1, 0, 1, 2, -2, 1, 0, 1, 0, 0
-         //2,	1,	0,  0,	0,	0,	0,	0, 1,	2,	1,	0,	0,	0,	0,	0, 0,	1,	2,	1,	0,	0,	0,	0, 0,	0,	1,	2,	1,	0,	0,	0, 0,	0,	0,	1,	2,	1,	0,	0, 0,	0,	0,	0,	1,	2,	1,	0, 0,	0,	0,	0,	0,	1,	2,	1, 0,	0,	0,	0,	0,	0,	1,	2
-
-         // Test spanBasis
-
-         //3, 0, 0, 0, 1, 0, 0, 0, 5, 0, 2, 0, 0, 0, 0, 7, 4, 0
-         //1, 2, 2, 7, 1, 5, 6, 2, 3, 3, 4, 5, 3, 3, 6, 7
-
-    };
-
-    int l = sizeof(values) / sizeof(int);
-    int s = (int) sqrt(l);
-
-    Fractionalize<Integer>* fValues = util::allocate<Fractionalize<Integer>>(l);
-    Integer* iValues = util::allocate<Integer>(l);
-
-    for (int i = 0; i < l; ++i) {
-        fValues[i] = Integer(values[i]);
-        iValues[i] = Integer(values[i]);
-    }
-
-    Matrix<Fractionalize<Integer>> fMat(fValues, s, s);
-    Matrix<Integer> iMat(iValues, s, s);
-    util::deallocate(fValues);
-    util::deallocate(iValues);
-
-    std::cout << "To decompose: " << std::endl << fMat << std::endl;
-    try {
         std::cout << "Decomposing with integer coefficients:" << std::endl;
         auto iBase = decompose(iMat);
         auto iInv = matOps::inverse(iBase);
@@ -82,24 +41,38 @@ int main() {
         auto fBase = decompose(fMat);
         auto fInv = matOps::inverse(fBase);
         std::cout << "Base:" << std::endl << fBase << std::endl << "Inverse: " << std::endl << fInv << std::endl << "Decomposition:" << std::endl << fInv * fMat * fBase << std::endl;
-
     }
-    catch (std::invalid_argument const& ex) {
-        std::cout << "Invalid argument exception: " << ex.what() << std::endl;
-        return -1;
-    }
-    catch (std::out_of_range const& ex) {
-        std::cout << "Out of range exception: " << ex.what() << std::endl;
-        return -1;
-    }
+    std::cout << "Finished" << std::endl;
 
     util::allocate<Integer>(0, true);
     util::allocate<Fractionalize<Integer>>(0, true);
 
     util::deallocate<Integer>(nullptr, true);
     util::deallocate<Fractionalize<Integer>>(nullptr, true);
-    int x = 0;
-    std::cin >> x;
+
+    std::string line;
+    getline(std::cin, line);
+    return 1;
+}
+
+template<typename R>
+Matrix<R> parseToMatrix(std::string str) {
+    // Get dimension
+    int dim_sq = 0;
+    int num = 0;
+    int cnt = 0;
+    std::istringstream is(str);
+    while (is >> num) dim_sq++;
+
+    // Get values
+    R* values = util::allocate<R>(dim_sq);
+    is = std::istringstream (str);
+    while (is >> num) values[cnt++] = num;
+
+    int dim = (int) std::sqrt(dim_sq);
+    Matrix<R> result(values, dim, dim);
+    util::deallocate(values);
+    return result;
 }
 
 Matrix<int> fullBipartite(int n, int m) {
