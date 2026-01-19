@@ -9,6 +9,7 @@
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
 #include "datastructure/modp.hpp"
+#include "datastructure/root.hpp"
 
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
@@ -19,6 +20,10 @@ Matrix<int> fullBipartite(int n, int m);
 const int p = 101;
 
 int main() {
+    Root<Integer> x(Polynomial<Integer>(1, 2) + 1, 0);
+    Root<Integer> y(Polynomial<Integer>(1, 2) + 1, 1);
+    std::cout << x * y << " " << x + y << " " << x / y << " " << x - y << std::endl;
+
     while(true) {
         std::string line;
         std::string str = "";
