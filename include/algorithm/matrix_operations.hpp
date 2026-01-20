@@ -127,9 +127,8 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	if (n != m) {
 		throw std::invalid_argument("Cannot find inverse of a non-square matrix.");
 	}
-	Matrix<R> I(1, n);
 	// Get (mat, I)
-	Matrix<R> help = minkSum(mat, I);
+	Matrix<R> help = minkSum(mat, Matrix<R>(1, n, n));
 	// Reduce to (diag, mat^(-1))
 	auto rrefRet = rref(help, true);
 	Matrix<R> result = rrefRet.ref;
@@ -196,10 +195,10 @@ const Polynomial<R> matOps::charPolyNaive(const Matrix<R>& mat) {
 	Polynomial<R>* arr = util::allocate<Polynomial<R>>(mat.getN() * mat.getM());
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < n; ++j) {
-			arr[n * i + j] = Polynomial<R>(mat(i, j));
+			arr[n * i + j] = mat(i, j);
 		}
 	}
-	auto hMat = Matrix<Polynomial<R>>(arr, n, n) - Matrix<Polynomial<R>>(Polynomial<R>(1, 1), n);
+	auto hMat = Matrix<Polynomial<R>>(arr, n, n) - Matrix<Polynomial<R>>(Polynomial<R>(1, 1), n, n);
 	util::deallocate(arr);
 	return matOps::determinant(hMat);
 }

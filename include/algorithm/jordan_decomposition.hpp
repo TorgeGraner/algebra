@@ -79,8 +79,8 @@ Matrix<R> decompose(Matrix<R>& A) {
 		std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << std::endl;
 		std::vector<Matrix<R>> complements;
 		// Set psi := A - lambda * I
-		Matrix<R> psi = A - Matrix<R>(eig, n);
-		Matrix<R> mult = Matrix<R>(1, n);
+		Matrix<R> psi = A - Matrix<R>(eig, n, n);
+		Matrix<R> mult = Matrix<R>(1, n, n);
 		Matrix<R> lastKernel = Matrix<R>(nullptr, n, 0);
 		// Calculate the complements ker psi^(k+1) / ker psi^k, containing possible base vectors for the primary components
 		for (int i = 0; i < alg_mult; ++i) {
@@ -102,5 +102,5 @@ Matrix<R> decompose(Matrix<R>& A) {
 			}
 		}
 	}
-	return matOps::minkSum(jordanBase, matOps::completeBasis(jordanBase, Matrix<R>(1, n)));
+	return matOps::minkSum(jordanBase, matOps::completeBasis(jordanBase, Matrix<R>(1, n, n)));
 }

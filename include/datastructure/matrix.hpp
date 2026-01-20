@@ -30,7 +30,7 @@ public:
 	//-------------------------------------------------------------------------------------------------------------|
 	Matrix() = default;							// Default constructor
 	Matrix(R*, const int, const int);			// Standard constructor
-	Matrix(R, const int = 1);					// Standard constructor
+	Matrix(R, const int = 1, const int m = 1);	// Diagonal matrix constructor
 	Matrix(const Matrix&);						// Copy constructor
 	Matrix(Matrix&&) noexcept;					// Move constructor
 
@@ -82,7 +82,7 @@ Matrix<R>::Matrix(R* _entries, const int n, const int m) : n(n), m(m) {
 
 // Diagonal quadratic matrix constructor
 template <typename R>
-Matrix<R>::Matrix(R entry, const int n) : n(n), m(n) {
+Matrix<R>::Matrix(R entry, const int n, int m) : n(n), m(m) {
 	entries = util::allocate<R>(n * m);
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < m; ++j) {

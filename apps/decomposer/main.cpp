@@ -20,11 +20,14 @@ Matrix<int> fullBipartite(int n, int m);
 const int p = 101;
 
 int main() {
-    Root<Integer> x(Polynomial<Integer>(1, 2) + 1, 0);
-    Root<Integer> y(Polynomial<Integer>(1, 2) + 1, 1);
-    std::cout << x * y << " " << x + y << " " << x / y << " " << x - y << std::endl;
+    for (int i = 0; i < 1; ++i) {
+        
+        Root<Integer> x(Polynomial<Integer>(1, 3) + 3, 0);
+        Root<Integer> y(Polynomial<Integer>(1, 3) + 3, 1);
+        std::cout << x << " " << y << " " << x + y << " " << x * y << " " << x / x << std::endl;
+    }
 
-    while(true) {
+    while(false) {
         std::string line;
         std::string str = "";
         std::cout << "Input Matrix, enter with line break, exit with empty matrix:\n"; 
@@ -62,16 +65,20 @@ int main() {
         std::cout << "Base:" << std::endl << mBase << std::endl << "Inverse: " << std::endl << mInv << std::endl << "Decomposition:" << std::endl << mInv * mMat * mBase << std::endl;
 
     }
-    std::cout << "Finished" << std::endl;
+    #ifndef NDEBUG
+        std::cout << "Accounting (not counting variables in scope of main):" << std::endl;
 
-    util::allocate<Integer>(0, true);
-    util::allocate<Fractionalize<Integer>>(0, true);
+        util::allocate<Integer>(0, true);
+        util::allocate<Fractionalize<Integer>>(0, true);
+        util::allocate<ModP<p>>(0, true);
 
-    util::deallocate<Integer>(nullptr, true);
-    util::deallocate<Fractionalize<Integer>>(nullptr, true);
+        util::deallocate<Integer>(nullptr, true);
+        util::deallocate<Fractionalize<Integer>>(nullptr, true);
+        util::deallocate<ModP<p>>(0, true);
+    #endif
 
     std::string line;
-    getline(std::cin, line);
+    // getline(std::cin, line);
     return 1;
 }
 

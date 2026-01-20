@@ -57,7 +57,7 @@ A:=\begin{bmatrix}
 
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
 
-The characteristic polynomial can be calculated in two ways. The naive way as $$p(x)=\det(A-x*I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
+The characteristic polynomial can be calculated in two ways. The naive way as $$p(X)=\det(A-X*I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
 
 ## Notes
 Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
@@ -71,4 +71,16 @@ Does not work well with floating point arithmetic, even with a wrapper class, si
 
 Does not scale well due to extreme growth of coefficients as is usual with exact algorithms.
 
-Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead. 
+Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead (actually wrapping the native type long long).
+
+## Root calculus
+Defines numbers only by its minimal polynomial e.g. $i$ as the root of $X^2+1$. If 
+
+$$P(X)=0\quad\text{with}\quad P(X)=\sum_{i=0}^na_iX^i\quad\text{then}\quad X^n=-\frac{1}{a_n}\sum_{i=0}^{n-1}a_iX^i.$$
+This can be abused to find a polynomial, whose root is e.g. $X+Y$. Since $K[X,Y]/(P,Q)$ is a finite dimensional vector space, there must be a linear dependence between the powers $(X+Y)^k$. Finding this dependence gives us the coefficients of the minimal (see below) polynomial of $X+Y$. To generate the powers of $1/X$, factor the greatest possible power of $X$ from $P$, subtract the constant term and divide by $X$, i.e.
+
+$$\sum_{k=0}^na_kX^k=0\quad\Leftrightarrow\quad X^{\ell}\sum_{k=\ell+1}^na_kX^{k-\ell}+a_{\ell}X^{\ell}=0\quad\Leftrightarrow\quad-\sum_{k=\ell+1}^na_kX^{k-\ell-1}=\frac{a_{\ell}}{X}$$
+
+Since there is no algebraic distinction between the roots of a polynomial, this result is the shared minimal polynomial of ALL possible sums of roots of $P$ and $Q$, which can be undesired. Especially, the given polynomial does not have to be irreducible. 
+
+Let e.g. $P(X)=X^2+1$ and $Q(Y)=Y^2+1$, such that $X$ and $Y$ are both $\pm i$. Since $(\pm i)\cdot(\pm i)=\pm1$ (as $i\cdot(-i)$ is permitted), the calculated polynomial to $XY$ is $Z^2-1=(Z-1)(Z+1)$. Again, there is no algebraic distinction between $1$ and $-1$.
