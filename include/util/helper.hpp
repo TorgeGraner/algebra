@@ -6,12 +6,13 @@ namespace util {
 	/*
 	* @brief Greatest common divisor of two things
 	* @return the gcd of a and b
+	* Probably not the fastest way to do this
 	*/
 	template <typename R>
 	inline R gcd(const R& a, const R& b) {
 		return (b == 0) ? a : gcd(b, a % b);
 	}
-
+	
 	/*
 	* @brief A custom wrapper function of allocation using new
 	* @paramn final If set to true print the number of allocated arrays

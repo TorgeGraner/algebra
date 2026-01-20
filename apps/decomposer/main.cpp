@@ -11,6 +11,7 @@
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
 #include "datastructure/modp.hpp"
+#include "datastructure/root.hpp"
 
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
