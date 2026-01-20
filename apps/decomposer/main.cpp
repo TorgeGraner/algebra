@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <sstream>
+#include <chrono>
+#include <cstdlib>
 
 #include "util/helper.hpp"
 
@@ -13,12 +15,29 @@
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
 
+const int p = 2;
+
 template<typename R> bool parseToMatrix(std::string, Matrix<R>&);
+template<typename R> void decomp(Matrix<R>&);
 Matrix<int> fullBipartite(int n, int m);
 
-const int p = 101;
+void account() {
+    #ifndef NDEBUG
+        std::cout << "Accounting:" << std::endl;
+
+        util::allocate<Integer>(0, true);
+        util::allocate<Fractionalize<Integer>>(0, true);
+        util::allocate<ModP<p>>(0, true);
+
+        util::deallocate<Integer>(nullptr, true);
+        util::deallocate<Fractionalize<Integer>>(nullptr, true);
+        util::deallocate<ModP<p>>(0, true);
+    #endif
+}
 
 int main() {
+    if (std::atexit(account)) return EXIT_FAILURE;
+
     while(true) {
         std::string line;
         std::string str = "";
@@ -37,37 +56,29 @@ int main() {
             continue;
         }
 
-        if (fMat.getM() == 0) break;
+        if (fMat.getM() == 0) return EXIT_SUCCESS;
 
-        std::cout << "Decomposing matrix: " << std::endl << fMat << std::endl;
-
-        std::cout << "Decomposing with integer coefficients:" << std::endl;
-        auto iBase = decompose(iMat);
-        auto iInv = matOps::inverse(iBase);
-        std::cout << "Base:" << std::endl << iBase << std::endl << "Inverse: " << std::endl << iInv << std::endl << "Decomposition:" << std::endl << iInv * iMat * iBase << std::endl;
-
-        std::cout << "Decomposing with rational coefficients:" << std::endl;
-        auto fBase = decompose(fMat);
-        auto fInv = matOps::inverse(fBase);
-        std::cout << "Base:" << std::endl << fBase << std::endl << "Inverse: " << std::endl << fInv << std::endl << "Decomposition:" << std::endl << fInv * fMat * fBase << std::endl;
-
-        std::cout << "Decomposing with mod " << p << " coefficients:" << std::endl;
-        auto mBase = decompose(mMat);
-        auto mInv = matOps::inverse(mBase);
-        std::cout << "Base:" << std::endl << mBase << std::endl << "Inverse: " << std::endl << mInv << std::endl << "Decomposition:" << std::endl << mInv * mMat * mBase << std::endl;
-
+        decomp(iMat);
+        decomp(fMat);
+        decomp(mMat);
     }
-    std::cout << "Finished" << std::endl;
+    
+}
 
-    util::allocate<Integer>(0, true);
-    util::allocate<Fractionalize<Integer>>(0, true);
+template<typename R>
+void decomp(Matrix<R>& mat) {
+    std::cout << "Decomposing with " << typeid(R).name() << " coefficients:" << std::endl;
 
-    util::deallocate<Integer>(nullptr, true);
-    util::deallocate<Fractionalize<Integer>>(nullptr, true);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    auto base = decompose(mat);
+    auto inv = matOps::inverse(base);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    std::string line;
-    getline(std::cin, line);
-    return 1;
+    std::cout << "Base:" << std::endl << base << "Inverse: " << std::endl << inv << "Decomposition:" << std::endl << inv * mat * base;
+    #ifndef NDEBUG
+        std::cout << "Required " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds" << std::endl;
+    #endif
+    std::cout << std::endl;
 }
 
 template<typename R>
