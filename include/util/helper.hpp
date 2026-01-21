@@ -3,6 +3,12 @@
 #include <string>
 
 namespace util {
+
+	static int numAlloc = 0;
+	static int sizeAlloc = 0;
+
+	static int numDealloc = 0;
+
 	/*
 	* @brief Greatest common divisor of two things
 	* @return the gcd of a and b
@@ -19,17 +25,13 @@ namespace util {
 	* Used to keep track of the number of allocations for testing if the destructors and constructors of the classes work as intended.
 	*/
 	template <typename R>
-	R* allocate(int k, bool final = false) {
-		static int cnt = 0;
-		static int cntSz = 0;
-		if (!final) {
-			++cnt;
-			cntSz += sizeof(R) * k;
+	R* allocate(int k) {
+		if (k > 0) {
+			++numAlloc;
+			sizeAlloc += sizeof(R) * k;
 			return new R[k];
-		} else {
-			std::cout << "Allocated " << cnt << " arrays with in total " << cntSz << " bytes of " << typeid(R).name() << std::endl;
-			return nullptr;
 		}
+		return nullptr;
 	}
 
 	/*
@@ -38,15 +40,10 @@ namespace util {
 	* Used to keep track of the number of deallocations for testing if the destructors and constructors of the classes work as intended.
 	*/
 	template <typename R>
-	void deallocate(R* ptr, bool final = false) {
-		static int cnt = 0;
-		if (!final) {
-			if (ptr != nullptr) {
-				++cnt;
-				delete[] ptr;
-			}
-		} else {
-			std::cout << "Deallocated " << cnt << " arrays of " << typeid(R).name() << std::endl;
+	void deallocate(R* ptr) {
+		if (ptr != nullptr) {
+			++numDealloc;
+			delete[] ptr;
 		}
 	}
 }

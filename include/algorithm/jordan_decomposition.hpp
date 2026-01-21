@@ -62,7 +62,7 @@ template <typename R>
 Matrix<R> decompose(Matrix<R>& A) {
 	int n = A.getN();
 	Polynomial<R> cPoly = matOps::charPolyNaive(A);
-	std::cout << "Characteristic polynomial: " << cPoly << std::endl;
+	std::cout << "Characteristic polynomial: " << cPoly << "\n";
 	// Calculate factorization of the characteristic polynomial 
 	Matrix<R> jordanBase = Matrix<R>(nullptr, n, 0);
 	std::vector<R> eigenvalues;
@@ -76,7 +76,7 @@ Matrix<R> decompose(Matrix<R>& A) {
 			cPoly /= currFactor;
 			++alg_mult;
 		}
-		std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << std::endl;
+		std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << "\n";
 		std::vector<Matrix<R>> complements;
 		// Set psi := A - lambda * I
 		Matrix<R> psi = A - Matrix<R>(eig, n, n);

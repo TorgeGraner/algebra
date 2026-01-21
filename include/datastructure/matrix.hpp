@@ -30,7 +30,7 @@ public:
 	//-------------------------------------------------------------------------------------------------------------|
 	Matrix() = default;							// Default constructor
 	Matrix(R*, const int, const int);			// Standard constructor
-	Matrix(R, const int = 1, const int m = 1);	// Diagonal matrix constructor
+	Matrix(R, const int, const int m);			// Diagonal matrix constructor
 	Matrix(const Matrix&);						// Copy constructor
 	Matrix(Matrix&&) noexcept;					// Move constructor
 
@@ -47,9 +47,9 @@ public:
 	friend Matrix operator*(Matrix lhs, const Matrix& rhs) { return lhs *= rhs; }
 
 	bool operator==(const Matrix<R>&) const;
-	bool operator==(const int&) const;
+	bool operator==(const R&) const;
 	bool operator!=(const Matrix<R>& rhs) const { return !(*this == rhs); }
-	bool operator!=(const int& rhs) const { return !(*this == rhs); }
+	bool operator!=(const R& rhs) const { return !(*this == rhs); }
 
 	R& operator()(const int, const int) const;
 
@@ -185,7 +185,7 @@ bool Matrix<R>::operator==(const Matrix<R>& rhs) const {
 
 // Check if matrix is scaled identity matrix
 template <typename R>
-bool Matrix<R>::operator==(const int& rhs) const {
+bool Matrix<R>::operator==(const R& rhs) const {
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < m; ++j) {
 			if (i == j) {
@@ -253,7 +253,7 @@ std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
 			for (int k = 0; k < fill; ++k) os << " ";
 		}
 		os.flush();
-		os << std::endl;
+		os << "\n";
 	}
 	return os;
 }

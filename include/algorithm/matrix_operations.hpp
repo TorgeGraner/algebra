@@ -10,7 +10,7 @@ namespace matOps {
 	template <typename R>
 	const auto rref(const Matrix<R>&, bool);
 
-	template <typename R> const Matrix<R> inverse(const Matrix<R>&);
+	template <typename R> const R inverse(const Matrix<R>&, Matrix<R>&);
 	template <typename R> const Polynomial<R> charPoly(const Matrix<R>&);
 	template <typename R> const Polynomial<R> charPolyNaive(const Matrix<R>&);
 	template <typename R> const int rank(const Matrix<R>&);
@@ -121,7 +121,7 @@ const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 * diag is a diagonal matrix
 */ 
 template <typename R>
-const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
+const R matOps::inverse(const Matrix<R>& mat, Matrix<R>& out) {
 	int n = mat.getN();
 	int m = mat.getM();
 	if (n != m) {
@@ -131,11 +131,11 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	Matrix<R> help = minkSum(mat, Matrix<R>(1, n, n));
 	// Reduce to (diag, mat^(-1))
 	auto rrefRet = rref(help, true);
-	Matrix<R> result = rrefRet.ref;
+	Matrix<R>& reduced = rrefRet.ref;
 	// Find least common multiple of elements in the diagonal matrix diag
 	R diagLcm = 1;
 	for (int i = 0; i < n; ++i) {
-		diagLcm *= result(i, i) / util::gcd(diagLcm, result(i, i));
+		diagLcm *= reduced(i, i) / util::gcd(diagLcm, reduced(i, i));
 	}
 	// If diagLcm is zero, the rank of the matrix does not have full rank
 	if (diagLcm == 0) {
@@ -145,13 +145,13 @@ const Matrix<R> matOps::inverse(const Matrix<R>& mat) {
 	R* arr = util::allocate<R>(n * m);
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < m; ++j) {
-			arr[i * m + j] = result(i, m + j) * diagLcm / result(i, i);
+			arr[i * m + j] = reduced(i, m + j) * diagLcm / reduced(i, i);
 		}
 	}
-	result = Matrix<R>(arr, n, m);
+	out = Matrix<R>(arr, n, m);
 	util::deallocate<R>(arr);
-	//assert(mat * result == diagLcm);
-	return result;
+	assert(mat * out == diagLcm);
+	return diagLcm;
 }
 
 /*
@@ -177,7 +177,7 @@ const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 		for (int j = 0; j < n; ++j) {
 			arr[n - k] += C(j, j);
 		}
-		// Might throw in characteristik != 0
+		// Might throw in characteristic != 0
 		arr[n - k] /= (-k);
 	}
 	Polynomial<R> result(arr, n);

@@ -5,7 +5,7 @@ Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $
 
 ## Build
 In project directory:
-* Create debug/release subdirectory (e.g. ```mkdir release``` or ```mkdir release```)
+* Create debug/release subdirectory (e.g. ```mkdir release``` or ```mkdir debug```)
 
 In corresponding subdirectory:
 * Invoke ```cmake .. -DCMAKE_BUILD_TYPE = Release``` or ```cmake .. -DCMAKE_BUILD_TYPE = Debug```
@@ -57,7 +57,7 @@ A:=\begin{bmatrix}
 
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
 
-The characteristic polynomial can be calculated in two ways. The naive way as $$p(X)=\det(A-X*I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
+The characteristic polynomial can be calculated in two ways. The naive way as $$p(X)=\det(A-X\cdot I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
 
 ## Notes
 Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
@@ -83,4 +83,4 @@ $$\sum_{k=0}^na_kX^k=0\quad\Leftrightarrow\quad X^{\ell}\sum_{k=\ell+1}^na_kX^{k
 
 Since there is no algebraic distinction between the roots of a polynomial, this result is the shared minimal polynomial of ALL possible sums of roots of $P$ and $Q$, which can be undesired. Especially, the given polynomial does not have to be irreducible. 
 
-Let e.g. $P(X)=X^2+1$ and $Q(Y)=Y^2+1$, such that $X$ and $Y$ are both $\pm i$. Since $(\pm i)\cdot(\pm i)=\pm1$ (as $i\cdot(-i)$ is permitted), the calculated polynomial to $XY$ is $Z^2-1=(Z-1)(Z+1)$. Again, there is no algebraic distinction between $1$ and $-1$.
+Let e.g. $P(X)=X^2+1$ and $Q(Y)=Y^2+1$, such that $X$ and $Y$ are both $\pm i$. Since $(\pm i)\cdot(\pm i)=\pm1$ (as $i\cdot(-i)$ is permitted), the calculated polynomial to $XY$ is $Z^2-1=(Z-1)(Z+1)$.

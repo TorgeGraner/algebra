@@ -16,33 +16,26 @@
 #include "algorithm/matrix_operations.hpp"
 #include "algorithm/jordan_decomposition.hpp"
 
+// Must be prime
 const int p = 2;
 
 template<typename R> bool parseToMatrix(std::string, Matrix<R>&);
 template<typename R> void decomp(Matrix<R>&);
-Matrix<int> fullBipartite(int n, int m);
+template<typename R> Matrix<R> fullBipartite(int n, int m);
 
-void account() {
-    #ifndef NDEBUG
-        std::cout << "Accounting:" << std::endl;
-
-        util::allocate<Integer>(0, true);
-        util::allocate<Fractionalize<Integer>>(0, true);
-        util::allocate<ModP<p>>(0, true);
-
-        util::deallocate<Integer>(nullptr, true);
-        util::deallocate<Fractionalize<Integer>>(nullptr, true);
-        util::deallocate<ModP<p>>(0, true);
-    #endif
+void account() { 
+    std::cout << "There were " << util::numAlloc - util::numDealloc << " unaccounted arrays.\n"; 
 }
 
 int main() {
-    if (std::atexit(account)) return EXIT_FAILURE;
+    #ifndef NDEBUG
+        if (std::atexit(account)) return EXIT_FAILURE;
+    #endif
 
     while(true) {
         std::string line;
         std::string str = "";
-        std::cout << "Input Matrix, enter with line break, exit with empty matrix:\n"; 
+        std::cout << "Input Matrix or exit by typing exit:\n"; 
         do {
             getline(std::cin, line);
             str += line + " ";
@@ -52,36 +45,53 @@ int main() {
         Matrix<Fractionalize<Integer>> fMat;
         Matrix<ModP<p>> mMat;
 
-        if (!parseToMatrix<Fractionalize<Integer>>(str, fMat) || !parseToMatrix<Integer>(str, iMat) || !parseToMatrix<ModP<p>>(str, mMat)) {
-            std::cout << "Erroneous matrix entered"<< std::endl;
+        if (str.find("exit") != std::string::npos) {
+            return EXIT_SUCCESS;
+        }
+        if (str.find_first_not_of(" ") == std::string::npos) {
+            std::cout << "Please enter a matrix\n";
             continue;
         }
-
-        if (fMat.getM() == 0) return EXIT_SUCCESS;
+        if (!parseToMatrix<Fractionalize<Integer>>(str, fMat) || !parseToMatrix<Integer>(str, iMat) || !parseToMatrix<ModP<p>>(str, mMat)) {
+            std::cout << "Erroneous matrix entered\n";
+            continue;
+        }
 
         decomp(iMat);
         decomp(fMat);
         decomp(mMat);
     }
-    
 }
 
 template<typename R>
 void decomp(Matrix<R>& mat) {
-    std::cout << "Decomposing with " << typeid(R).name() << " coefficients:" << std::endl;
+    std::cout << "Decomposing with " << typeid(R).name() << " coefficients:\n";
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    auto base = decompose(mat);
-    auto inv = matOps::inverse(base);
+
+    Matrix<R> base = decompose(mat);
+    Matrix<R> inv;
+    R scale = matOps::inverse(base, inv);
+    Matrix<R> decomposition = inv * mat * base;
+
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    std::cout << "Base:" << std::endl << base << "Inverse: " << std::endl << inv << "Decomposition:" << std::endl << inv * mat * base;
+    std::cout << "Base:\n" << base;
+    if (scale != 1) {
+        std::cout << "Inverse scaled by " << scale << ":\n" << inv << "Decomposition scaled by " << scale << ":\n" << decomposition;
+    } else {
+        std::cout << "Inverse:\n" << inv << "Decomposition:\n" << decomposition;
+    }
+
     #ifndef NDEBUG
-        std::cout << "Required " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds" << std::endl;
+        std::cout << "Required " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds\n";
     #endif
-    std::cout << std::endl;
+    std::cout << "\n";
 }
 
+/*
+* @brief Returns a Matrix with coefficients in R from a string of integers. The number of integers in the string must be a perfect square.
+*/
 template<typename R>
 bool parseToMatrix(std::string str, Matrix<R>& result) {
     // Get dimension
@@ -103,15 +113,19 @@ bool parseToMatrix(std::string str, Matrix<R>& result) {
     return true;
 }
 
-Matrix<int> fullBipartite(int n, int m) {
+/*
+* @brief Returns the adjacency matrix of the full bipartite graph
+*/
+template<typename R>
+Matrix<R> fullBipartite(int n, int m) {
     int k = n + m;
-    int* values = util::allocate<int>(k * k);
+    R* values = util::allocate<R>(k * k);
     for (int i = 0; i < k; ++i) {
         for (int j = 0; j < k; ++j) {
             values[k * i + j] = (((j < n && i < n) || (j >= n && i >= n)) ? 0 : 1);
         }
     }
-    Matrix<int> ret(values, k, k);
+    Matrix<R> ret(values, k, k);
     util::deallocate(values);
     return ret;
 }

@@ -10,14 +10,14 @@ std::ostream& operator<<(std::ostream&, const Integer&);
 */
 class Integer {
 private:
-	long long value = 0;
+	int64_t value = 0;
 
 public:
 	//-------------------------------------------------------------------------------------------------------------|
 	// Constructors
 	//-------------------------------------------------------------------------------------------------------------|
 	Integer() = default;
-	Integer(long long val) : value(val) {};
+	Integer(int64_t val) : value(val) {};
 
 	//-------------------------------------------------------------------------------------------------------------|
 	// Operators
@@ -26,7 +26,7 @@ public:
 	Integer operator-=(const Integer& rhs) { value -= rhs.value; return *this; }
 	Integer operator*=(const Integer& rhs) { value *= rhs.value; return *this; }
 	Integer operator/=(const Integer& rhs) { 
-	if (value % rhs.value != 0) throw std::invalid_argument("Cannot divide by an integer that is not a divisor.");
+		if (value % rhs.value != 0) throw std::invalid_argument("Cannot divide by an integer that is not a divisor.");
 		value /= rhs.value; 
 		return *this; 
 	}

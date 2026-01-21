@@ -78,10 +78,7 @@ public:
 * By basic polynomial division, calculate a polynomial result, such that *this = divisor * result + rest.
 * The rest in this will possess a degree less than result.
 * 
-* WARNING: This function is unstable and should only be used when it is known that the divisor divides *this
-*		   Can, even in low dimensions, lead to an exponentially growing number of digits, overflowing standard int
-* TODO: Catch divisor not being a divisor
-*		Workaround for possible division error by divisor_lead
+* WARNING: Can, even in low dimensions, lead to an exponentially growing number of digits, overflowing standard int
 */
 template<typename R>
 bool Polynomial<R>::polyDiv(const Polynomial<R>& dividend, const Polynomial& divisor, Polynomial& res) const {
@@ -89,7 +86,9 @@ bool Polynomial<R>::polyDiv(const Polynomial<R>& dividend, const Polynomial& div
 	int degS = divisor.getDegree();
 	int newDeg = degF - degS;
 
-	if (degS < 0 || newDeg < 0) return false;
+	if (degS < 0 || newDeg < 0) {
+		return false;
+	}
 	if (degF < 0) {
 		res = 0;
 		return true;
@@ -104,14 +103,16 @@ bool Polynomial<R>::polyDiv(const Polynomial<R>& dividend, const Polynomial& div
 	while (newDeg >= 0) {
 		// Eliminate the leading coefficient of the remaining polynomial 
 		remLead = rem[degF];
-		if (remLead % divisorLead != 0) return false;
-		resArr[newDeg] = remLead / divisorLead;
-		// Enforce lead(remainder) * X^deg(remainder) - (lead(divisor) * X^deg(divisor)) * (lead(remainder) / lead(divisor)) * X^(deg(remainder) - deg(divisor)) = 0
-		rem -= Polynomial(resArr[newDeg], newDeg) * divisor;
-		if(rem.getDegree() >= degF) {
-			std::cout << dividend << " " << divisor << " " << rem << std::endl;
+		// If the lead of divisor does not divide the lead, the divisor polynomial does not divide this polynomial in this ring
+		if (remLead % divisorLead != 0) {
+			util::deallocate(resArr);
 			return false;
 		}
+		resArr[newDeg] = remLead / divisorLead;
+		// Enforce 0 = lead(remainder) * X^deg(remainder) - (lead(divisor) * X^deg(divisor)) * (lead(remainder) / lead(divisor)) * X^(deg(remainder) - deg(divisor))
+		rem -= Polynomial(resArr[newDeg], newDeg) * divisor;
+		// Should not occur and indicates faultily implemented ring class or integer overflow. Would result in a stack overflow
+		assert(rem.getDegree() < degF);
 		degF = rem.getDegree();
 		newDeg = degF - degS;
 	}
@@ -256,27 +257,32 @@ Polynomial<R> Polynomial<R>::operator/=(const Polynomial& divisor) {
 	Polynomial q;
 	if (*this == 0) return 0;
 	if (!polyDiv(*this, divisor, q)) {
-		std::cout << *this << " " << divisor << std::endl;
+		std::cout << *this << " " << divisor << "\n";
 		throw std::invalid_argument("Error in polynomial division.");
 	}
 	*this = q;
 	return *this;
 }
 
-/* 
-* A faulty implementation of the modulo operator used to trick the gcd. A correct implementation relying on polynomial division
-* leads to exponentially growing coefficients, slowing down the program and resulting in possible overflow.
-*/
 template <typename R>
 Polynomial<R> Polynomial<R>::operator%=(const Polynomial& modulus) {
-	if (modulus.getDegree() == -1) throw std::invalid_argument("Cannot modulate by zero.");
-	if (modulus == 1) {
+	if (modulus.getDegree() == -1) {
+		throw std::invalid_argument("Cannot modulate by zero.");
+	}
+	if (*this == modulus) {
 		*this = 0;
 		return *this;
-	} else {
-		*this = 1;
-		return *this; // Trick gcd
 	}
+
+	Polynomial<R> res;
+	if (modulus.getDegree() == 0 || !polyDiv(*this, modulus, res)) {
+		 // Polydiv cannot (or should not) be performed, enforce gcd(*this, modulus) == 1
+		*this = (modulus == 1 ? 0 : 1);
+	} else {
+		// Correct but probably slows down the program considerably
+		*this -= modulus * res;
+	}
+	return *this;
 }
 
 // Access operator for coefficients
