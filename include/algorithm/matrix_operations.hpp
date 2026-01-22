@@ -1,10 +1,11 @@
 #pragma once
+#include <cassert>
+
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
 
 #include "util/helper.hpp"
 
-#include <cassert>
 
 namespace matOps {
 	template <typename R>
@@ -80,8 +81,7 @@ const auto matOps::rref(const Matrix<R>& mat, bool reduced) {
 				if (arr[m * i + k] != 0) {
 					if (rowGcd == 0) {
 						rowGcd = arr[m * i + k];
-					}
-					else {
+					} else {
 						rowGcd = util::gcd(arr[m * i + k], rowGcd);
 					}
 				}
@@ -135,17 +135,18 @@ const R matOps::inverse(const Matrix<R>& mat, Matrix<R>& out) {
 	// Find least common multiple of elements in the diagonal matrix diag
 	R diagLcm = 1;
 	for (int i = 0; i < n; ++i) {
-		diagLcm *= reduced(i, i) / util::gcd(diagLcm, reduced(i, i));
-	}
-	// If diagLcm is zero, the rank of the matrix does not have full rank
-	if (diagLcm == 0) {
-		throw std::invalid_argument("Matrix is not invertible.");
+		R& temp = reduced(i, i);
+		if (temp == 0) {
+			// Diagonal entries not being zero implies that the rank of mat is not full
+			throw std::invalid_argument("Matrix is not invertible.");
+		}
+		diagLcm *= temp / util::gcd(diagLcm, temp);
 	}
 	// Scale mat^(-1) according to the lcm and the entry in the diagonal matrix in the corresponding row
 	R* arr = util::allocate<R>(n * m);
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < m; ++j) {
-			arr[i * m + j] = reduced(i, m + j) * diagLcm / reduced(i, i);
+			arr[i * m + j] = reduced(i, m + j) * (diagLcm / reduced(i, i));
 		}
 	}
 	out = Matrix<R>(arr, n, m);
@@ -171,7 +172,7 @@ const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 	for (int k = 1; k <= n; ++k) {
 		if (k > 1) {
 			C += Matrix<R>(arr[n - k + 1], n);
-			C = mat * C;
+			C = mat * C; // Note how *= is right sided multiplication!
 		}
 		arr[n - k] = 0;
 		for (int j = 0; j < n; ++j) {
@@ -279,17 +280,27 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 */
 template <typename R>
 const Matrix<R> matOps::completeBasis(const Matrix<R>& first, const Matrix<R>& second) {
+	if (first == 0) return second;
+
 	int n = first.getN();
 	int m = first.getM();
-	if (first == 0) return second;
-	// TODO: Check if span(this) is a subset of span(other)
-	if (matOps::rank(first) == matOps::rank(second) || m == second.getM()) {
+
+	int fRank = matOps::rank(first);
+	int sRank = matOps::rank(second);
+
+	// Assert, that first is in fact a subspace of second
+	if (matOps::rank(matOps::minkSum(first, second)) > sRank) {
+		throw std::invalid_argument("First is no subspace of second.");
+	}
+
+	// If the ranks are equal, the subspaces must be equal
+	if (fRank == sRank) {
 		return Matrix<R>(nullptr, n, 0);
 	}
 	// Check for every column vector in other, if it is linearly independent to the vectors in this basis.
 	// If so, add it to the basis and continue until the ranks of the bases are equal.
 	int newM = second.getM() - m;
-	if (newM < 0) throw std::invalid_argument("Dimension of second larger than dimension of first.");
+
 	R* arr = util::allocate<R>(n * second.getM());
 	// arr = A^T, dimension m * n, dim - m row-vectors remain
 	for (int i = 0; i < n; ++i) {
@@ -334,6 +345,9 @@ const Matrix<R> matOps::completeBasis(const Matrix<R>& first, const Matrix<R>& s
 	}
 	Matrix<R> result(resArr, n, newM);
 	util::deallocate(resArr);
+
+	assert(matOps::rank(matOps::minkSum(first, result)) == sRank);
+
 	return result;
 }
 
@@ -365,7 +379,7 @@ const Matrix<R> matOps::minkSum(const Matrix<R>& spanA, const Matrix<R>& spanB) 
 	return result;
 }
 
-// @brief return the j-th vector of mat
+// @brief return the j-th column vector of mat
 template<typename R>
 const Matrix<R> matOps::getVec(const Matrix<R>& mat, const int j) {
 	int n = mat.getN();

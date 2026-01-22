@@ -13,9 +13,11 @@ class ModP {
     private:
         int value = 0;
 
-        int mod(int x) {
+        inline int mod(int x) const {
             while (x < 0) x += p;
-            return x % p;
+			x %= p;
+			assert(0 <= x && x < p);
+            return x;
         }
 
     public:
@@ -32,18 +34,20 @@ class ModP {
 	ModP operator+=(const ModP& rhs) { value = mod(value + rhs.value); return *this; }
 	ModP operator-=(const ModP& rhs) { value = mod(value - rhs.value); return *this; }
 	ModP operator*=(const ModP& rhs) { value = mod(value * rhs.value); return *this; }
+	ModP operator%=(const ModP& rhs) { value = 0; 					   return *this; }
 	ModP operator/=(const ModP& rhs) { // Brute force, kinda ugly
-        if (rhs.value == 0) throw std::invalid_argument("Cannot divide by zero.");
+        if (rhs.value == 0) {
+			throw std::invalid_argument("Cannot divide by zero.");
+		}
         for (int i = 0; i < p; ++i) {
-            if (mod(i * rhs.value) == value) {
+            if (i * rhs.value == value) {
                 value = i;
                 return *this;
             }
         }
-        std::cout << value << " " << rhs.value << std::endl;
-        throw std::invalid_argument("Not a divisor");
+		// Will only occur iff p is not prime and rhs a divisor of p
+        throw std::invalid_argument("Not a divisor.");
 	}
-	ModP operator%=(const ModP& rhs) { value = 0; return 0; }
 
 	friend ModP operator+(ModP lhs, const ModP& rhs) { return lhs += rhs; }
 	friend ModP operator-(ModP lhs, const ModP& rhs) { return lhs -= rhs; }
@@ -52,7 +56,7 @@ class ModP {
 	friend ModP operator%(ModP lhs, const ModP& rhs) { return lhs %= rhs; }
 
 	bool operator==(const ModP& rhs) const { return value == rhs.value; }
-	bool operator!=(const ModP& rhs) const { return value != rhs.value; }
+	bool operator!=(const ModP& rhs) const { return !(*this == rhs); }
 
 	//-------------------------------------------------------------------------------------------------------------|
 	// Getters

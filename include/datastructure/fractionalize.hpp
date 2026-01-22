@@ -102,7 +102,8 @@ Fractionalize<R> Fractionalize<R>::operator/=(const Fractionalize& rhs) {
 
 template<typename R>
 Fractionalize<R> Fractionalize<R>::operator%=(const Fractionalize& rhs) {
-	return 0;
+	numerator = 0;
+	return *this;
 }
 
 template<typename R>

@@ -29,7 +29,17 @@ or
 as long the number of integers entered is a perfect square.
 
 ## Algorithm
-The algorithm calculates the characteristic polynomial of the given matrix and searches (by brute force) for a factorization. For each linear factor, it determines a base for the corresponding generalized eigenspaces and combines them to a complete base. If the characteristic polynomial does not break down completely, return a partial base.
+The algorithm first calculates the characteristic polynomial of the given matrix. This can be done in two ways. The naive way as $$p(X)=\det(A-X\cdot I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$. Factorization is done by brute force (bad).
+
+For each eigenvalue $\lambda\in R$ of $A$, the kernels of the endomorphisms $\psi^k:=(A-\lambda\cdot I)^k$ are calculated. From top to bottom, for each base vector ${v\in\ker\psi^k/\ker\psi^{k-1}}$ (that is not already in the result) the corresponding jordan chain
+
+$$v,\psi(v),\dots,\psi^{k-1}(v)$$
+
+is added to the result. The matrix containing all given jordan chains form a jordan base $S$, such that
+
+$$S^{-1}\cdot A\cdot S$$
+
+is in jordan normal form (with ones above the diagonal). If the characteristic polynomial does not break down completely, return a partial base.
 
 Since some functions, such as matrix inversion, require multiplicative inverses, when using a Ring R, results might have to be multiplied by a scalar. Take for example the following integer matrix, which is invertible over the rationals but not over the integers:
 
@@ -56,8 +66,6 @@ A:=\begin{bmatrix}
 ```
 
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
-
-The characteristic polynomial can be calculated in two ways. The naive way as $$p(X)=\det(A-X\cdot I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$.
 
 ## Notes
 Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.

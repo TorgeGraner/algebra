@@ -56,6 +56,10 @@ int main() {
             std::cout << "Erroneous matrix entered\n";
             continue;
         }
+        if (fMat.getN() == 0) {
+            std::cout << "Please enter a matrix\n";
+            continue;
+        }
 
         decomp(iMat);
         decomp(fMat);
@@ -65,7 +69,7 @@ int main() {
 
 template<typename R>
 void decomp(Matrix<R>& mat) {
-    std::cout << "Decomposing with " << typeid(R).name() << " coefficients:\n";
+    std::cout << "Decomposing\n" << mat << "\nwith " << typeid(R).name() << " coefficients:\n";
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -83,9 +87,7 @@ void decomp(Matrix<R>& mat) {
         std::cout << "Inverse:\n" << inv << "Decomposition:\n" << decomposition;
     }
 
-    #ifndef NDEBUG
-        std::cout << "Required " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds\n";
-    #endif
+    std::cout << "Required " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " microseconds\n";
     std::cout << "\n";
 }
 

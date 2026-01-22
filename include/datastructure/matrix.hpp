@@ -149,7 +149,7 @@ Matrix<R> Matrix<R>::operator*=(const Matrix<R>& multiplicand) {
 		return *this;
 	}
 	if (m != multiplicand.getN()) {
-		throw std::invalid_argument("Cannot multiplication matrices with wrong dimensions.");
+		throw std::invalid_argument("Cannot multiply matrices with wrong dimensions.");
 	}
 	R* arr = util::allocate<R>(n * multM);
 	for (int i = 0; i < n; ++i) {

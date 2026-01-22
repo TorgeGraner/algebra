@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <cassert>
 
 namespace util {
 
@@ -16,7 +17,9 @@ namespace util {
 	*/
 	template <typename R>
 	inline R gcd(const R& a, const R& b) {
-		return (b == 0) ? a : gcd(b, a % b);
+		R result = (b == 0) ? a : gcd(b, a % b);
+		if (a != 0 || b != 0) assert(result != 0);
+		return result;
 	}
 	
 	/*

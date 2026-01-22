@@ -6,7 +6,7 @@
 
 #include "algorithm/matrix_operations.hpp"
 
-template <typename R> bool getFactor(const Polynomial<R>&, Polynomial<R>&);
+template <typename R> bool getRoot(const Polynomial<R>&, Polynomial<R>&);
 template <typename R> Matrix<R> decompose(Matrix<R>&);
 
 
@@ -19,17 +19,23 @@ template <typename R> Matrix<R> decompose(Matrix<R>&);
 * TODO: Improve everything
 */
 template <typename R>
-bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>& factor) {
-	if (toFactor.getDegree() == -1) return false;
+bool getRoot(const Polynomial<R>& toFactor, R& root) {
+	if (toFactor.getDegree() < 1) return false;
 	Polynomial<R> X(1, 1);
 	// If the constant term is zero, X is a factor
 	if (toFactor[0] == 0) {
-		factor = X;
+		root = 0;
 		return true;
+	}
+	for (int val = -20; val <= 20; ++val) {
+		if (toFactor.map(val) == 0) {
+			root = val;
+			return true;
+		}
 	}
 	// If toFactor is of the Form aX + b return X + b/a 
 	if (toFactor.getDegree() == 1) {
-		factor = X + Polynomial<R>(toFactor[0] / toFactor[1]);					// TODO: Possible error, rather return aX + b
+		root = toFactor[0] / toFactor[1];					// TODO: Possible error, rather return aX + b
 		return true;
 	}
 	// If the degree if of toFactor is 2, return its roots by the abc-formula
@@ -39,18 +45,11 @@ bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>& factor) {
 		const R& c = toFactor[0];
 
 		if (b * b - a * c * 4 == 0) {
-			factor = X + Polynomial<R>(b / (a * 2));							// TODO: Possible error
+			root = b / (a * 2);							// TODO: Possible error
 			return true;
 		}
 	}
 	// Brute force check for p(n) = 0 for some integers n
-	for (int tVal = -20; tVal <= 20; ++tVal) {
-		R val(tVal);
-		if (toFactor.map(val) == 0) {
-			factor = X - Polynomial<R>(val);
-			return true;
-		}
-	}
 	return false;
 }
 
@@ -61,42 +60,53 @@ bool getFactor(const Polynomial<R>& toFactor, Polynomial<R>& factor) {
 template <typename R>
 Matrix<R> decompose(Matrix<R>& A) {
 	int n = A.getN();
-	Polynomial<R> cPoly = matOps::charPolyNaive(A);
-	std::cout << "Characteristic polynomial: " << cPoly << "\n";
-	// Calculate factorization of the characteristic polynomial 
-	Matrix<R> jordanBase = Matrix<R>(nullptr, n, 0);
-	std::vector<R> eigenvalues;
-	Polynomial<R> currFactor;
 
-	while (getFactor(cPoly, currFactor)) {
-		R eig = currFactor[0] * (-1);
+	Polynomial<R> X(1, 1);
+	Polynomial<R> cPoly = matOps::charPolyNaive(A);
+	std::vector<R> eigenvalues;
+
+	Matrix<R> jordanBase = Matrix<R>(nullptr, n, 0);
+	R eig;
+	while (getRoot(cPoly, eig)) {
+		Polynomial<R> currFactor = X - eig;
 		// Calculate the algebraic multiplicity of the current eigenvalue
 		int alg_mult = 0;
 		while (cPoly.map(eig) == 0) {
 			cPoly /= currFactor;
 			++alg_mult;
 		}
-		std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << "\n";
-		std::vector<Matrix<R>> complements;
+		//std::cout << "Found eigenvalue " << eig << " of algebraic multiplicity " << alg_mult << "\n";
+		std::vector<Matrix<R>> kernels;
 		// Set psi := A - lambda * I
 		Matrix<R> psi = A - Matrix<R>(eig, n, n);
-		Matrix<R> mult = Matrix<R>(1, n, n);
+		// psi^k, initially psi^0 = I
+		Matrix<R> psiPower = Matrix<R>(1, n, n);
+		// ker(psi^k), initially ker(psi^0) = 0
 		Matrix<R> lastKernel = Matrix<R>(nullptr, n, 0);
 		// Calculate the complements ker psi^(k+1) / ker psi^k, containing possible base vectors for the primary components
 		for (int i = 0; i < alg_mult; ++i) {
-			Matrix<R> help = matOps::kernelBasis(mult *= psi);
-			complements.push_back(matOps::completeBasis(lastKernel, help));
-			lastKernel = help;
+			psiPower *= psi;
+			Matrix<R> currKernel = matOps::kernelBasis(psiPower);
+			// TODO: Validate
+			if (lastKernel.getM() == currKernel.getM()) break;
+			kernels.insert(kernels.begin(), currKernel);
+			lastKernel = currKernel;
 		}
-		for (int i = (int) complements.size() - 1; i >= 0; --i) {
-			// Add all jordan chains of remaining vectors
-			while (complements[i].getM() != 0) {
-				Matrix<R> vect = matOps::getVec(complements[i], complements[i].getM() - 1);
-				// Add the jordan chain corresponding to vect
-				for (int k = 0; k < i + 1; ++k) {
+		int numBlocks = int(kernels.size());
+		// psi(ker psi^k) subseteq ker psi^{k - 1}
+		Matrix<R> imageSum(nullptr, n, 0);
+		for (int k = 0; k < numBlocks - 1; ++k) {
+			kernels[k] = matOps::completeBasis(matOps::minkSum(imageSum, kernels[k + 1]), kernels[k]);
+			imageSum = psi * matOps::minkSum(imageSum, kernels[k]);
+		}
+		kernels[numBlocks - 1] = matOps::completeBasis(imageSum, kernels[numBlocks - 1]);
+
+		for(int k = 0; k < numBlocks; ++k) {
+			// All remaining vectors generate unique jordan chains
+			for (int j = 0; j < kernels[k].getM(); ++j) {
+				Matrix<R> vect = matOps::getVec(kernels[k], j);
+				for (int p = 0; p < numBlocks - k; ++p) {
 					jordanBase = matOps::minkSum(vect, jordanBase);
-					// Remove psi^k(v) from the corresponding complement, such that no vector in its span is chosen later
-					complements[i - k] = matOps::completeBasis(vect, complements[i - k]);
 					vect = psi * vect;
 				}
 			}
