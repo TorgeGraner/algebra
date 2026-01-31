@@ -1,8 +1,9 @@
 #pragma once
-#include <iostream>
+#include <ostream>
 
 class Integer;
 std::ostream& operator<<(std::ostream&, const Integer&);
+
 /*
 * @brief A datastructure implementing the ring of integers, as a wrapper class of the native type int
 * This also fixes the problem associated with int, which drops the fractional part in a division (i.e. int x = 5/2 
@@ -25,11 +26,7 @@ public:
 	Integer operator+=(const Integer& rhs) { value += rhs.value; return *this; }
 	Integer operator-=(const Integer& rhs) { value -= rhs.value; return *this; }
 	Integer operator*=(const Integer& rhs) { value *= rhs.value; return *this; }
-	Integer operator/=(const Integer& rhs) { 
-		if (value % rhs.value != 0) throw std::invalid_argument("Cannot divide by an integer that is not a divisor.");
-		value /= rhs.value; 
-		return *this; 
-	}
+	Integer operator/=(const Integer& rhs) { value /= rhs.value; return *this; }
 	Integer operator%=(const Integer& rhs) { value %= rhs.value; return *this; }
 
 	friend Integer operator+(Integer lhs, const Integer& rhs) { return lhs += rhs; }
@@ -45,6 +42,7 @@ public:
 	// Getters
 	//-------------------------------------------------------------------------------------------------------------|
 	int getValue() const { return (int) value; }
+	static int characteristic() { return 0; }
 };
 
 std::ostream& operator<<(std::ostream& os, const Integer& obj) { 

@@ -1,14 +1,11 @@
 #pragma once
-#include <iostream>
-#include <string>
 #include <cassert>
 
 namespace util {
 
 	static int numAlloc = 0;
-	static int sizeAlloc = 0;
-
 	static int numDealloc = 0;
+	static int sizeAlloc = 0;
 
 	/*
 	* @brief Greatest common divisor of two things
@@ -18,35 +15,55 @@ namespace util {
 	template <typename R>
 	inline R gcd(const R& a, const R& b) {
 		R result = (b == 0) ? a : gcd(b, a % b);
-		if (a != 0 || b != 0) assert(result != 0);
+		// (a != 0 or b != 0) => result != 0
+		assert((a != 0 || b != 0) || (result == 0));
 		return result;
 	}
 	
 	/*
 	* @brief A custom wrapper function of allocation using new
-	* @paramn final If set to true print the number of allocated arrays
+	* @param final If set to true print the number of allocated arrays
 	* Used to keep track of the number of allocations for testing if the destructors and constructors of the classes work as intended.
 	*/
-	template <typename R>
-	R* allocate(int k) {
+	template <typename T>
+	T* allocate(int k) {
 		if (k > 0) {
 			++numAlloc;
-			sizeAlloc += sizeof(R) * k;
-			return new R[k];
+			sizeAlloc += sizeof(T) * k;
+			return new T[k];
 		}
 		return nullptr;
 	}
+	
+	template <typename T_IN, typename T_OUT>
+	T_OUT* copy(T_IN* arr, int k) {
+		T_OUT* res = allocate<T_OUT>(k);
+		std::copy(arr, arr + k, res);
+		return res;
+	}
+
+	template <typename R>
+	R* zeroes(int k) {
+		R* res = allocate<R>(k);
+		for (int j = 0; j < k; ++j) res[j] = 0;
+		return res;
+	}
 
 	/*
-	* @brief A custom wrapper function of deallocation using delete[]
+	* @brief A wrapper function of delete[]
 	* @param final If set to true, print the number of deallocated arrays
 	* Used to keep track of the number of deallocations for testing if the destructors and constructors of the classes work as intended.
 	*/
-	template <typename R>
-	void deallocate(R* ptr) {
+	template <typename T>
+	void deallocate(T* ptr) {
 		if (ptr != nullptr) {
 			++numDealloc;
 			delete[] ptr;
 		}
+	}
+
+	template<typename Base, typename T>
+	inline bool instanceof(const T*) {
+		return std::is_base_of<Base, T>::value;
 	}
 }

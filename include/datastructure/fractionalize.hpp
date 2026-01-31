@@ -1,11 +1,14 @@
-#include <iostream>
+#include <ostream>
+
 #include "util/helper.hpp"
+
 template <typename R> class Fractionalize;
 template <typename R> std::ostream& operator<<(std::ostream&, const Fractionalize<R>&);
-template <typename R>
+
 /*
 * @brief A datastructure implementing the field of fractions with coefficients in R
 */
+template <typename R>
 class Fractionalize {
 	private:
 		R numerator;
@@ -45,6 +48,7 @@ class Fractionalize {
 		//-------------------------------------------------------------------------------------------------------------|
 		const R getNumerator() const { return numerator; }
 		const R getDenominator() const { return denominator; }
+		static int characteristic() { return R::characteristic(); }
 };
 
 template<typename R>

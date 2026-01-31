@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <vector>
 
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
@@ -8,8 +9,7 @@
 
 
 namespace matOps {
-	template <typename R>
-	const auto rref(const Matrix<R>&, bool);
+	template <typename R> const auto rref(const Matrix<R>&, bool);
 
 	template <typename R> const R inverse(const Matrix<R>&, Matrix<R>&);
 	template <typename R> const Polynomial<R> charPoly(const Matrix<R>&);
@@ -157,7 +157,7 @@ const R matOps::inverse(const Matrix<R>& mat, Matrix<R>& out) {
 
 /*
 * An implementation of the Faddeev–LeVerrier algorithm to calculate the characteristic Polynomial fairly efficient in a ring of characteristic zero.
-* WARNING: Works if and only if the ring has characteristic zero
+* WARNING: Works if and only if the ring has characteristic zero.
 */
 template <typename R>
 const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
@@ -192,8 +192,9 @@ const Polynomial<R> matOps::charPoly(const Matrix<R>& mat) {
 */
 template <typename R>
 const Polynomial<R> matOps::charPolyNaive(const Matrix<R>& mat) {
+	// TODO: Assert quadratic
 	int n = mat.getN();
-	Polynomial<R>* arr = util::allocate<Polynomial<R>>(mat.getN() * mat.getM());
+	Polynomial<R>* arr = util::allocate<Polynomial<R>>(n * n);
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < n; ++j) {
 			arr[n * i + j] = mat(i, j);
@@ -228,16 +229,12 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 	int m = phi.getM();
 	auto help = rref(phi, true);
 	Matrix<R> phiRref = help.ref;
-	if (help.rank == m) {
-		std::cout << phi << std::endl << help.ref;
-		throw std::invalid_argument("Cannot calculate basis, phi is injective.");
-	}
 	// Row indicates the current row in the rref, column counts the current number of vectors in the incomplete basis
 	int row = 0;
 	int column = 0;
 	int dim = m - help.rank;
 	// The indices of the first non-zero element in the rref
-	int* indices = util::allocate<int>(help.rank);
+	std::vector<int> indices(help.rank);
 	R* arr = util::allocate<R>(m * dim);
 
 	for (int k = 0; k < m * dim; ++k) {
@@ -268,7 +265,6 @@ const Matrix<R> matOps::kernelBasis(const Matrix<R>& phi) {
 	}
 	Matrix<R> result(arr, m, dim);
 	util::deallocate(arr);
-	util::deallocate(indices);
 	assert(phi * result == 0);
 	return result;
 }

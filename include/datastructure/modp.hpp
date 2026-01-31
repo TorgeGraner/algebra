@@ -1,5 +1,6 @@
 #pragma once
-#include <iostream>
+#include <cassert>
+#include <ostream>
 
 template <typename int p> class ModP;
 template <typename int p> std::ostream& operator<<(std::ostream&, const ModP<p>&);
@@ -40,13 +41,14 @@ class ModP {
 			throw std::invalid_argument("Cannot divide by zero.");
 		}
         for (int i = 0; i < p; ++i) {
-            if (i * rhs.value == value) {
+            if (i * rhs.value % p == value) {
                 value = i;
                 return *this;
             }
         }
-		// Will only occur iff p is not prime and rhs a divisor of p
-        throw std::invalid_argument("Not a divisor.");
+		// Can only occur iff p is not prime and rhs a divisor of p
+		std::cout << value << " and " << rhs.value << "\n";
+        throw std::invalid_argument("P is not prime");
 	}
 
 	friend ModP operator+(ModP lhs, const ModP& rhs) { return lhs += rhs; }
@@ -62,6 +64,7 @@ class ModP {
 	// Getters
 	//-------------------------------------------------------------------------------------------------------------|
 	int getValue() const { return value; }
+	static int characteristic() { return p; }
 };
 
 template<typename int p>
