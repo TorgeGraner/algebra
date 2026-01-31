@@ -10,7 +10,7 @@
 #include "datastructure/polynomial.hpp"
 #include "datastructure/modp.hpp"
 
-#include "algorithm/jordan_decomposition.hpp"
+#include "algorithm/jordanDecomposition.hpp"
 
 // Must be prime
 const int p = 2;
@@ -69,7 +69,7 @@ void decomp(Matrix<R>& mat) {
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    Matrix<R> base = decompose(mat);
+    Matrix<R> base = jordanDecomposition(mat);
     Matrix<R> inv;
     R scale = base.inverse(inv);
     Matrix<R> decomposition = inv * mat * base;

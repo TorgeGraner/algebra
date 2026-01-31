@@ -12,50 +12,62 @@
 template<typename R> int testDivision();
 
 int main() {
-    int numErrTotal = 0;
-    int numErr = 0;
+    int numErr, numErrTotal = 0;
 
+    numErr = 0;
+    numErr += testDivision<ModP<2>>();
+    numErr += testDivision<ModP<5>>();
     numErr += testDivision<Integer>();
     numErr += testDivision<Fractionalize<Integer>>();
 
-    std::cout << numErr << " errors occurred\n";
     numErrTotal += numErr;
-    numErr = 0;
+    std::cout << "Encountered " << numErr << " errors testing polynomial division.\n";
+
+    std::cout << "Finished testPolynomial with " << numErrTotal << " errors.\n";
     return numErrTotal;
 }
 
 template<typename R>
 int testDivision() {
-    // Not that for mod p coefficients, the determinant has to be nonzero mod p
-    std::string dividends[] = {
-        "-360 -450 -413 -618 -583 -216 -126 -163 42 7",
-        "-360 -450 -413 -618 -583 -216 -126 -163 42 7",
-        "-243 405 -270 90 -15 1"
-    };
-    std::string divisors[] = {
-        "12 5 0 7",
-        "1 1 1 1 1",
-        "-3 1 "
-    };
-    std::string results[] = {
-        "-30 -25 -24 -24 -24 6 1",
-        "-360 -90 37 -205 35 7",
-        "81 -108 54 -12 1"
-    };
-    int cnt = 0;
-    for (std::string str : dividends) {
-        Polynomial<R> divisor, dividend, result;
-        Polynomial<R>::parseToPolynomial(dividends[cnt], dividend);
-        Polynomial<R>::parseToPolynomial(divisors[cnt], divisor);
-        Polynomial<R>::parseToPolynomial(results[cnt], result);
-        try {
-            std::cout << dividend / divisor << " " << result << "\n";
-            if (dividend / divisor != result) return EXIT_FAILURE;
-        } catch (std::invalid_argument const& ex) {
-            std::cout << ex.what() << "\n";
-            return EXIT_FAILURE;
-        }
+    std::vector<std::string> lhsStrArr, rhsStrArr, gTruthStrArr;
+
+    lhsStrArr.emplace_back("-360 -450 -413 -618 -583 -216 -126 -163 42 7");
+    lhsStrArr.emplace_back("-360 -450 -413 -618 -583 -216 -126 -163 42 7");
+    lhsStrArr.emplace_back("-243 405 -270 90 -15 1");
+
+    rhsStrArr.emplace_back("12 5 0 7");
+    rhsStrArr.emplace_back("1 1 1 1 1");
+    rhsStrArr.emplace_back("-3 1");
+
+    gTruthStrArr.emplace_back("-30 -25 -24 -24 -24 6 1");
+    gTruthStrArr.emplace_back("-360 -90 37 -205 35 7");
+    gTruthStrArr.emplace_back("81 -108 54 -12 1");
+
+    int cnt = -1;
+    int numErr = 0;
+    for (auto x : lhsStrArr) {
         ++cnt;
+        // Initialization
+        Polynomial<R> lhs, rhs, gTruth;
+        Polynomial<R>::parseToPolynomial(lhsStrArr[cnt], lhs);
+        Polynomial<R>::parseToPolynomial(rhsStrArr[cnt], rhs);
+        Polynomial<R>::parseToPolynomial(gTruthStrArr[cnt], gTruth);
+
+        try {
+            // Function call
+            Polynomial<R> res1 = lhs / rhs;
+
+            lhs /= rhs;
+            Polynomial<R> res2 = lhs;
+
+            // Assertion
+            numErr += util::assertEq(res1, gTruth, lhs, "polynomial division (out of place)");
+            numErr += util::assertEq(res2, gTruth, lhs, "polynomial division (in place)");
+        } catch (std::invalid_argument const& ex) {
+            std::cerr << ex.what() << " exception using " << typeid(R).name() << " coefficients.\n";
+            ++numErr;
+        }
     }
-    return EXIT_SUCCESS;
+    if (cnt == -1) std::cout << "Warning: Did not test.\n";
+    return numErr;
 }

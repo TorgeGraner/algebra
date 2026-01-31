@@ -5,10 +5,7 @@
 template <typename int p> class ModP;
 template <typename int p> std::ostream& operator<<(std::ostream&, const ModP<p>&);
 
-/*
-* @brief A datastructure implementing the ring of integers modulo a prime p
-*/
-
+// A datastructure implementing the ring of integers modulo p, if p is prime this is a field
 template <typename int p>
 class ModP {
     private:
@@ -26,12 +23,14 @@ class ModP {
 	//-------------------------------------------------------------------------------------------------------------|
 	// Constructors
 	//-------------------------------------------------------------------------------------------------------------|
+
 	ModP() = default;
 	ModP(int val) : value(mod(val)) {};
 
 	//-------------------------------------------------------------------------------------------------------------|
 	// Operators
 	//-------------------------------------------------------------------------------------------------------------|
+
 	ModP operator+=(const ModP& rhs) { value = mod(value + rhs.value); return *this; }
 	ModP operator-=(const ModP& rhs) { value = mod(value - rhs.value); return *this; }
 	ModP operator*=(const ModP& rhs) { value = mod(value * rhs.value); return *this; }
@@ -63,6 +62,7 @@ class ModP {
 	//-------------------------------------------------------------------------------------------------------------|
 	// Getters
 	//-------------------------------------------------------------------------------------------------------------|
+
 	int getValue() const { return value; }
 	static int characteristic() { return p; }
 };

@@ -1,9 +1,9 @@
 project(tests)
 
 set(LIB_TESTS
+    testPolynomial
     testMatrix
     testJordanDecomp
-    testPolynomial
 )
 
 foreach(TEST_NAME ${LIB_TESTS})

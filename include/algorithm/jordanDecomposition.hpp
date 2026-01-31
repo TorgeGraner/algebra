@@ -1,15 +1,11 @@
 #pragma once
 #include <vector>
 
-#include "datastructure/modp.hpp"
-
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
 
 template <typename R> bool getRoot(const Polynomial<R>&, Polynomial<R>&);
-template <typename R> Matrix<R> decompose(Matrix<R>&);
-
-
+template <typename R> Matrix<R> jordanDecomposition(Matrix<R>&);
 
 /*
 * @brief Calculate a factor of a given polynomial
@@ -59,7 +55,7 @@ bool getRoot(const Polynomial<R>& toFactor, R& root) {
 * TODO: Return Frobenius normal form for factors of degree two
 */
 template <typename R>
-Matrix<R> decompose(Matrix<R>& A) {
+Matrix<R> jordanDecomposition(Matrix<R>& A) {
 	int n = A.getN();
 	Polynomial<R> X(1, 1);
 	Polynomial<R> cPoly = A.charPoly();

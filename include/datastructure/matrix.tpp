@@ -106,13 +106,13 @@ void Matrix<R>::rref(bool reduced) {
 // Characteristic polynomial algorithms
 //---------------------------------------------------------------------|
 
-/* Calculate the characteristic polynomial as the determinant of the A - I * X with polynomial entries
+/* Calculate the characteristic polynomial as the determinant of I * X - A with polynomial entries
 * Warning: Highly volatile and should only be used in rings of finite characteristic
 */
 template <typename R>
 Polynomial<R> Matrix<R>::charPolyNaive() const {
-	Matrix<Polynomial<R>> polyMat = convert<Polynomial<R>>();
-	polyMat -= Matrix<Polynomial<R>>(Polynomial<R>(1, 1), n, m);
+	Matrix<Polynomial<R>>polyMat(Polynomial<R>(1, 1), n, m);
+	polyMat -= convert<Polynomial<R>>();
 	return polyMat.getDeterminant();
 }
 
