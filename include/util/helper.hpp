@@ -16,8 +16,6 @@ namespace util {
 	template <typename R>
 	inline R gcd(const R& a, const R& b) {
 		R result = (b == 0) ? a : gcd(b, a % b);
-		// (a != 0 or b != 0) => result != 0
-		assert((a != 0 || b != 0) || (result == 0));
 		return result;
 	}
 	

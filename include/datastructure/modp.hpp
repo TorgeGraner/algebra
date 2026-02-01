@@ -1,5 +1,4 @@
 #pragma once
-#include <cassert>
 #include <ostream>
 
 template <typename int p> class ModP;

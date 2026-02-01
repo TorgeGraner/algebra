@@ -6,8 +6,11 @@
 #include "datastructure/integer.hpp"
 #include "datastructure/modp.hpp"
 #include "datastructure/fractionalize.hpp"
+#include "datastructure/epsFloat.hpp"
 
 #include "datastructure/polynomial.hpp"
+
+const int eps = 10000000;
 
 template<typename R> int testDivision();
 
@@ -19,6 +22,7 @@ int main() {
     numErr += testDivision<ModP<5>>();
     numErr += testDivision<Integer>();
     numErr += testDivision<Fractionalize<Integer>>();
+    numErr += testDivision<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing polynomial division.\n";

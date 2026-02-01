@@ -5,12 +5,13 @@
 
 #include "datastructure/integer.hpp"
 #include "datastructure/modp.hpp"
+#include "datastructure/epsFloat.hpp"
 #include "datastructure/fractionalize.hpp"
 
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
 
-#define deb = false;
+const int eps = 10000000;
 
 template<typename R> int testMultiply();
 template<typename R> int testRank();
@@ -21,6 +22,7 @@ template<typename R> int testComplete();
 template<typename R> int testCharPoly();
 
 int main() {
+
     int numErr, numErrTotal = 0;
 
     numErr = 0;
@@ -28,6 +30,7 @@ int main() {
     numErr += testMultiply<Fractionalize<Integer>>();
     numErr += testMultiply<ModP<3>>();
     numErr += testMultiply<ModP<5>>();
+    numErr += testMultiply<EpsFloat<eps>>();
     
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing matrix multiplication.\n";
@@ -37,6 +40,7 @@ int main() {
     numErr += testInverse<Fractionalize<Integer>>();
     numErr += testInverse<ModP<3>>();
     numErr += testInverse<ModP<5>>();
+    numErr += testInverse<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing matrix inversion.\n";
@@ -46,6 +50,7 @@ int main() {
     numErr += testRank<Fractionalize<Integer>>();
     numErr += testRank<ModP<2>>();
     numErr += testRank<ModP<5>>();
+    numErr += testRank<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing matrix rank.\n";
@@ -55,6 +60,7 @@ int main() {
     numErr += testDeterminant<Fractionalize<Integer>>();
     numErr += testDeterminant<ModP<2>>();
     numErr += testDeterminant<ModP<5>>();
+    numErr += testDeterminant<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing matrix determinant.\n";
@@ -64,6 +70,7 @@ int main() {
     numErr += testNullspace<Fractionalize<Integer>>();
     numErr += testNullspace<ModP<7>>();
     numErr += testNullspace<ModP<5>>();
+    numErr += testNullspace<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing nullspace.\n";
@@ -73,6 +80,8 @@ int main() {
     numErr += testCharPoly<Fractionalize<Integer>>();
     numErr += testCharPoly<ModP<2>>();
     numErr += testCharPoly<ModP<5>>();
+    numErr += testCharPoly<EpsFloat<eps>>();
+
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing charpoly.\n";
@@ -82,6 +91,7 @@ int main() {
     numErr += testComplete<Fractionalize<Integer>>();
     numErr += testComplete<ModP<2>>();
     numErr += testComplete<ModP<5>>();
+    numErr += testComplete<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing complete.\n";
@@ -139,6 +149,7 @@ template<typename R>
 int testInverse() {
     std::vector<std::string> lhsStrArr;
     lhsStrArr.emplace_back("1 -1 1 -1 0 -2 0 -3 2 3 0 3 1 5 -1 6"); // det 2
+    lhsStrArr.emplace_back("16 36 25 5 0 0 8 12 4 0 0 0 4 3 0 0 0 0 2 0 0 0 0 0 1");
 
     int cnt = -1;
     int numErr = 0;

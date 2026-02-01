@@ -1,7 +1,7 @@
 # Algebra
 Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in any euclidean ring using exact arithmetic. 
 
-Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $𝔽_p$.
+Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $𝔽_p$, aswell as a wrapper class of double, modeling $ℝ$.
 
 ## Build
 In project directory:
@@ -75,11 +75,9 @@ Note that this programs is primarily used to get familiar with C++ template and 
 All datastructures are defined in the .hpp, since template classes cannot be seperated into .hpp and .cpp. The problem comes from the compiler not being able to infer the same template parameter for .hpp and .cpp. This problem could be fixed by always including the corresponding .cpp together with the .hpp.
 
 ## Limitations
-Does not work well with floating point arithmetic, even with a wrapper class, since rounding error can still influence the rank of a matrix, leading to faulty logic. 
-
 Does not scale well due to extreme growth of coefficients as is usual with exact algorithms.
 
-Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead (actually wrapping the native type long long).
+Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead (actually wrapping the native type int64_t).
 
 ## Root calculus
 Defines numbers only by its minimal polynomial e.g. $i$ as the root of $X^2+1$. If 

@@ -6,14 +6,18 @@
 
 #include "datastructure/integer.hpp"
 #include "datastructure/fractionalize.hpp"
+#include "datastructure/modp.hpp"
+#include "datastructure/epsFloat.hpp"
+
 #include "datastructure/matrix.hpp"
 #include "datastructure/polynomial.hpp"
-#include "datastructure/modp.hpp"
 
 #include "algorithm/jordanDecomposition.hpp"
 
 // Must be prime
 const int p = 2;
+
+const int eps = 10000000;
 
 template<typename R> void decomp(Matrix<R>&);
 template<typename R> Matrix<R> fullBipartite(int n, int m);
@@ -23,7 +27,11 @@ void account() {
     std::cout << "There were " << util::numDealloc << " deallocated arrays.\n"; 
 }
 
+
 int main() {
+
+
+    std::cout << (EpsFloat<eps> (0.01) == EpsFloat<eps>(0)) << "\n";
     #ifndef NDEBUG
         if (std::atexit(account)) return EXIT_FAILURE;
     #endif
@@ -40,6 +48,7 @@ int main() {
         Matrix<Integer> iMat;
         Matrix<Fractionalize<Integer>> fMat;
         Matrix<ModP<p>> mMat;
+        Matrix<EpsFloat<eps>> eMat;
 
         if (str.find("exit") != std::string::npos) {
             return EXIT_SUCCESS;
@@ -48,7 +57,7 @@ int main() {
             std::cout << "Please enter a matrix\n";
             continue;
         }
-        if (!Matrix<Fractionalize<Integer>>::parseToMatrix(str, fMat) || !Matrix<Integer>::parseToMatrix(str, iMat) || !Matrix<ModP<p>>::parseToMatrix(str, mMat)) {
+        if (!Matrix<Fractionalize<Integer>>::parseToMatrix(str, fMat) || !Matrix<Integer>::parseToMatrix(str, iMat) || !Matrix<ModP<p>>::parseToMatrix(str, mMat) || !Matrix<EpsFloat<eps>>::parseToMatrix(str, eMat)) {
             std::cout << "Erroneous matrix entered\n";
             continue;
         }
@@ -60,6 +69,7 @@ int main() {
         decomp(iMat);
         decomp(fMat);
         decomp(mMat);
+        decomp(eMat);
     }
 }
 

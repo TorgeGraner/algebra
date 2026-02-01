@@ -6,10 +6,13 @@
 #include "datastructure/integer.hpp"
 #include "datastructure/modp.hpp"
 #include "datastructure/fractionalize.hpp"
+#include "datastructure/epsFloat.hpp"
 
 #include "datastructure/matrix.hpp"
 
 #include "algorithm/jordanDecomposition.hpp"
+
+const int eps = 10000000;
 
 template<typename R> int testJordanDecomposition();
 
@@ -21,6 +24,7 @@ int main() {
     numErr += testJordanDecomposition<Fractionalize<Integer>>();
     numErr += testJordanDecomposition<ModP<5>>();
     numErr += testJordanDecomposition<ModP<2>>();
+    numErr += testJordanDecomposition<EpsFloat<eps>>();
 
     numErrTotal += numErr;
     std::cout << "Encountered " << numErr << " errors testing jordan decomposition.\n";
