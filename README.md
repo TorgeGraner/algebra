@@ -68,7 +68,7 @@ A:=\begin{bmatrix}
 Using the scaled inverse therefore stays in the ring of integers, even though later results might be scaled accordingly. For obvious reasons this problem does not occur when working in a field.
 
 ## Notes
-Works with any integral domain realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as a constructor from an integer. Division in a ring might throw an exception if the divisor does not divide the divident.
+Works with any euclidean ring realized as class, correctly implementing the operators ```+, -, *, /``` and ```%``` (such that ```%``` is the actual rest of division not something like ```fmod```), aswell as ```+=,-=,*=,/=,%=``` a constructor from an integer and a static function ```int characteristic()``` returning the characteristic. Division in a ring might throw an exception if the divisor does not divide the dividend.
 
 Note that this programs is primarily used to get familiar with C++ template and memory management. I am aware that direct (de-)allocation of memory and use of raw pointers is not incentivized.
 
