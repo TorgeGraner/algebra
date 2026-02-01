@@ -24,6 +24,7 @@ template <typename R> void swap(Matrix<R>&, Matrix<R>&);
 */
 template<typename R>
 class Matrix {
+template <typename T> friend class Matrix; // Required for convert function
 //-------------------------------------------------------------------------------------------------------------|
 // Private
 //-------------------------------------------------------------------------------------------------------------|
@@ -77,7 +78,6 @@ private:
 // Public
 //-------------------------------------------------------------------------------------------------------------|
 public:
-	template <typename T> friend class Matrix;
 	//------------------------------------------------------------------------------|
 	// Constructors
 	//------------------------------------------------------------------------------|
@@ -95,7 +95,7 @@ public:
 
 	Matrix operator+=(const Matrix&);
 	Matrix operator-=(const Matrix&);
-	Matrix operator*=(const Matrix& rhs) { swap(*this, *this * rhs); return *this; }
+	Matrix operator*=(const Matrix& rhs) { *this = *this * rhs; return *this; }
 	Matrix operator*=(const R&);
 	
 	Matrix& operator=(const Matrix&);

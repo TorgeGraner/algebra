@@ -62,11 +62,11 @@ public:
 	// Operators (in place)
 	//---------------------------------------------------------------------|
 
-	Polynomial operator+=(const Polynomial& rhs) { swap(*this, *this + rhs); return *this; }
-	Polynomial operator-=(const Polynomial& rhs) { swap(*this, *this - rhs); return *this; }
-	Polynomial operator*=(const Polynomial& rhs) { swap(*this, *this * rhs); return *this; }
-	Polynomial operator/=(const Polynomial& rhs) { swap(*this, *this / rhs); return *this; }
-	Polynomial operator%=(const Polynomial& rhs) { swap(*this, *this % rhs); return *this; }
+	Polynomial operator+=(const Polynomial& rhs) { *this = *this + rhs; return *this; }
+	Polynomial operator-=(const Polynomial& rhs) { *this = *this - rhs; return *this; }
+	Polynomial operator*=(const Polynomial& rhs) { *this = *this * rhs; return *this; }
+	Polynomial operator/=(const Polynomial& rhs) { *this = *this / rhs; return *this; }
+	Polynomial operator%=(const Polynomial& rhs) { *this = *this % rhs; return *this; }
 
 	Polynomial& operator=(const Polynomial&);
 	Polynomial& operator=(Polynomial&&) noexcept;
@@ -81,7 +81,7 @@ public:
 	Polynomial operator/(const Polynomial&) const;
 	Polynomial operator%(const Polynomial&) const;
 	
-	bool operator==(const Polynomial& rhs) const;
+	bool operator==(const Polynomial&) const;
 	bool operator!=(const Polynomial& rhs) const { return !(*this == rhs); }
 
 	const R& operator()(int) const;

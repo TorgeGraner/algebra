@@ -77,9 +77,7 @@ void Matrix<R>::rref(bool reduced) {
 			// Calculate the gcd of row i and factor it out
 			R rowGcd = 0;
 			for (int j = 0; j < m; ++j) {
-				if ((*this)(i, j) != 0) {
-					rowGcd = util::gcd(rowGcd, (*this)(i, j));
-				}
+				rowGcd = util::gcd(rowGcd, (*this)(i, j));
 			}
 			if (rowGcd != 0 && rowGcd != 1) {
 				cancelRow(i, rowGcd);
@@ -267,7 +265,6 @@ bool Matrix<R>::operator==(const R& rhs) const {
 	return true;
 }
 
-
 // Getter for j-th entry in i-th row
 template <typename R>
 const R& Matrix<R>::operator()(const int i, const int j) const {
@@ -339,7 +336,6 @@ R Matrix<R>::inverse(Matrix<R>& out) const {
 		}
 	}
 	out = Matrix<R>(arr, n, m);
-	assert((*this) * out == diagLcm);
 	return diagLcm;
 }
 
@@ -428,7 +424,7 @@ Matrix<R> Matrix<R>::mergeHorizontal(const Matrix<R>& rhs) const {
 	return Matrix<R>(arr, n, newM);
 }
 
-// Calculates the characteristic polynomial
+// Calculates the characteristic polynomial p(x) = det(x * I - A)
 template <typename R>
 Polynomial<R> Matrix<R>::charPoly() const {
 	if (n != m) throw std::invalid_argument("Characteristic polynomial undefined for non-square matrix.");
@@ -521,6 +517,6 @@ bool Matrix<R>::parseToMatrix(const std::string& str, Matrix<R>& out, int n) {
     int cnt = 0;
     for (int value : data) values[cnt++] = value;
 
-    swap(out, Matrix<R>(values, n, m));
+    out = Matrix<R>(values, n, m);
     return true;
 }

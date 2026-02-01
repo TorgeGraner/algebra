@@ -307,6 +307,6 @@ bool Polynomial<R>::parseToPolynomial(const std::string& str, Polynomial<R>& out
 	int cnt = 0;
     for (int value : data) values[cnt++] = value;
 
-    swap(out, Polynomial<R>(values, numTotal - 1));
+    out = Polynomial<R>(values, numTotal - 1);
 	return true;
 }

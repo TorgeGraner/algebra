@@ -1,5 +1,5 @@
 # Algebra
-Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in an integral domain using exact arithmetic. 
+Calculates the jordan normal form of a given trigonalizable Matrix with coefficients in a field or an integral domain using exact arithmetic. 
 
 Currently decomposes a given integer matrix over ℤ, ℚ and the finite field $𝔽_p$.
 
@@ -29,7 +29,7 @@ or
 as long the number of integers entered is a perfect square.
 
 ## Algorithm
-The algorithm first calculates the characteristic polynomial of the given matrix. This can be done in two ways. The naive way as $$p(X)=\det(A-X\cdot I)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$. Factorization is done by brute force (bad).
+The algorithm first calculates the characteristic polynomial of the given matrix. This can be done in two ways. The naive way as $$p(X)=\det(X\cdot I-A)$$ always works, even though it is inefficient. The Faddeev–LeVerrier algorithm is also implemented, however it only works in characteristic zero, and therefore fails for coefficients in $𝔽_p$. Factorization is done by brute force (bad).
 
 For each eigenvalue $\lambda\in R$ of $A$, the kernels of the endomorphisms $\psi^k:=(A-\lambda\cdot I)^k$ are calculated. From top to bottom, for each base vector ${v\in\ker\psi^k/\ker\psi^{k-1}}$ (that is not already in the result) the corresponding jordan chain
 

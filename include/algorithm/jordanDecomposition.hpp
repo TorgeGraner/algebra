@@ -106,7 +106,7 @@ Matrix<R> jordanDecomposition(Matrix<R>& A) {
 		}
 	}
 	if(jordanBase.getM() != n) {
-		swap(jordanBase, jordanBase.mergeHorizontal(jordanBase.complete(Matrix<R>(R(1), n, n))));
+		jordanBase = jordanBase.mergeHorizontal(jordanBase.complete(Matrix<R>(R(1), n, n)));
 	}
 	return jordanBase;
 }
