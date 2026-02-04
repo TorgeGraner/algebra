@@ -75,7 +75,7 @@ Note that this programs is primarily used to get familiar with C++ template and 
 All datastructures are defined in the .hpp, since template classes cannot be seperated into .hpp and .cpp. The problem comes from the compiler not being able to infer the same template parameter for .hpp and .cpp. This problem could be fixed by always including the corresponding .cpp together with the .hpp.
 
 ## Limitations
-Does not scale well due to extreme growth of coefficients as is usual with exact algorithms.
+Does not scale well due to extreme growth of coefficients as is usual with exact algorithms (at least with integer and rational coefficients).
 
 Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead (actually wrapping the native type int64_t).
 
