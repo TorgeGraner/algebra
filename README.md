@@ -78,16 +78,3 @@ All datastructures are defined in the .hpp, since template classes cannot be sep
 Does not scale well due to extreme growth of coefficients as is usual with exact algorithms (at least with integer and rational coefficients).
 
 Even though the native type int can be used as a template parameter, under given circumstances (when using nested types as template parameters) this can produce unwanted problems. Use the wrapper class Integer instead (actually wrapping the native type int64_t).
-
-## Root calculus
-Defines numbers only by its minimal polynomial e.g. $i$ as the root of $X^2+1$. If 
-
-$$P(X)=0\quad\text{with}\quad P(X)=\sum_{i=0}^na_iX^i\quad\text{then}\quad X^n=-\frac{1}{a_n}\sum_{i=0}^{n-1}a_iX^i.$$
-
-This can be abused to find a polynomial, whose root is e.g. $X+Y$. Since $K[X,Y]/(P,Q)$ is a finite dimensional vector space, there must be a linear dependence between the powers $(X+Y)^k$. Finding this dependence gives us the coefficients of the minimal (see below) polynomial of $X+Y$. To generate the powers of $1/X$, factor the greatest possible power of $X$ from $P$, subtract the constant term and divide by $X$, i.e.
-
-$$\sum_{k=0}^na_kX^k=0\quad\Leftrightarrow\quad X^{\ell}\sum_{k=\ell+1}^na_kX^{k-\ell}+a_{\ell}X^{\ell}=0\quad\Leftrightarrow\quad-\sum_{k=\ell+1}^na_kX^{k-\ell-1}=\frac{a_{\ell}}{X}$$
-
-Since there is no algebraic distinction between the roots of a polynomial, this result is the shared minimal polynomial of ALL possible sums of roots of $P$ and $Q$, which can be undesired. Especially, the given polynomial does not have to be irreducible. 
-
-Let e.g. $P(X)=X^2+1$ and $Q(Y)=Y^2+1$, such that $X$ and $Y$ are both $\pm i$. Since $(\pm i)\cdot(\pm i)=\pm1$ (as $i\cdot(-i)$ is permitted), the calculated polynomial to $XY$ is $Z^2-1=(Z-1)(Z+1)$.
