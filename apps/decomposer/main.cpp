@@ -30,8 +30,6 @@ void account() {
 
 int main() {
 
-
-    std::cout << (EpsFloat<eps> (0.01) == EpsFloat<eps>(0)) << "\n";
     #ifndef NDEBUG
         if (std::atexit(account)) return EXIT_FAILURE;
     #endif

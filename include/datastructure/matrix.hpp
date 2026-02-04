@@ -50,7 +50,7 @@ private:
 	Matrix(R* arr, int n, int m) : entries(arr), n(n), m(m), reduced(false) {}	// Standard constructor
 
 	inline int index(int i, int j, int m) const { return m * i + j; }			// Converts tuple to array index
-	inline R& rawEntry(int i, int j) const { return entries[index(i, j, m)]; };	// Returns reference to entry (i, j)
+	inline R& rawEntry(int i, int j) const { return entries[index(i, j, m)]; }	// Returns reference to entry (i, j)
 	
 	//---------------------------------------------------------------------|
 	// Elementary row operations (in place)

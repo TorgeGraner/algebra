@@ -61,11 +61,6 @@ namespace util {
 		}
 	}
 
-	template<typename Base, typename T>
-	inline bool instanceof(const T*) {
-		return std::is_base_of<Base, T>::value;
-	}
-
     template<typename T_VAL, typename T_GTRUTH, typename T_OBJ>
     bool assertEq(T_VAL val, T_GTRUTH gTruth, T_OBJ obj, std::string msg) {
 		if (val != gTruth) {

@@ -16,37 +16,35 @@ template <typename R> Matrix<R> jordanDecomposition(Matrix<R>&);
 * TODO: Improve everything
 */
 template <typename R>
-bool getRoot(const Polynomial<R>& toFactor, R& root) {
+bool getRoot(const Polynomial<R>& toFactor, R& out) {
 	if (toFactor.getDegree() < 1) return false;
-	Polynomial<R> X(1, 1);
 	// If the constant term is zero, X is a factor
 	if (toFactor(0) == 0) {
-		root = 0;
+		out = 0;
 		return true;
 	}
 	for (int val = -20; val <= 20; ++val) {
 		if (toFactor.map(val) == 0) {
-			root = val;
+			out = val;
 			return true;
 		}
 	}
 	// If toFactor is of the Form aX + b return X + b/a 
 	if (toFactor.getDegree() == 1) {
-		root = toFactor(0) / toFactor(1);					// TODO: Possible error, rather return aX + b
+		out = toFactor(0) / toFactor(1);					// TODO: Possible error, rather return aX + b
 		return true;
 	}
 	// If the degree if of toFactor is 2, return its roots by the abc-formula
 	if (toFactor.getDegree() == 2) {
-		const R& a = toFactor(2);
-		const R& b = toFactor(1);
-		const R& c = toFactor(0);
+		R a = toFactor(2);
+		R b = toFactor(1);
+		R c = toFactor(0);
 
 		if (b * b - a * c * 4 == 0) {
-			root = b / (a * 2);							// TODO: Possible error
+			out = b / (a * 2);							// TODO: Possible error
 			return true;
 		}
 	}
-	// Brute force check for p(n) = 0 for some integers n
 	return false;
 }
 
@@ -57,11 +55,10 @@ bool getRoot(const Polynomial<R>& toFactor, R& root) {
 template <typename R>
 Matrix<R> jordanDecomposition(Matrix<R>& A) {
 	int n = A.getN();
-	Polynomial<R> X(1, 1);
+	Polynomial<R> X = Polynomial<R>(1, 1);
 	Polynomial<R> cPoly = A.charPoly();
-	std::vector<R> eigenvalues;
 
-	Matrix<R> jordanBase(R(0), n, 0);
+	Matrix<R> jordanBase = Matrix<R>(R(0), n, 0);
 	R eig;
 	while (getRoot(cPoly, eig)) {
 		Polynomial<R> currFactor = X - eig;
@@ -75,7 +72,7 @@ Matrix<R> jordanDecomposition(Matrix<R>& A) {
 		// Set psi := A - lambda * I
 		Matrix<R> psi = A - Matrix<R>(eig, n, n);
 		// psi^k, initially psi^0 = I
-		Matrix<R> psiPower(R(1), n, n);
+		Matrix<R> psiPower = Matrix<R>(R(1), n, n);
 		// ker(psi^k), initially ker(psi^0) = 0
 		int lastKernelDimension = -1;
 		// Calculate the complements ker psi^(k+1) / ker psi^k, containing possible base vectors for the primary components
@@ -88,8 +85,7 @@ Matrix<R> jordanDecomposition(Matrix<R>& A) {
 		}
 		int numBlocks = int(kernels.size()) - 1;
 		// psi(ker psi^k) subseteq ker psi^{k - 1}
-		Matrix<R> imageSum(R(0), n, 0);
-		//kernels.emplace_back(imageSum); // Kernel of psi^0
+		Matrix<R> imageSum = Matrix<R>(R(0), n, 0);
 		for (int k = 0; k < numBlocks; ++k) {
 			kernels[k] = imageSum.mergeHorizontal(kernels[k + 1]).complete(kernels[k]);
 			imageSum = psi * imageSum.mergeHorizontal(kernels[k]);
