@@ -6,18 +6,22 @@
 // Polynomial division
 //---------------------------------------------------------------------|
 
-/*
-* Standard polynomial division (iteratively, in place)
-* Input: dividend, divisor, quotient and remainder such that
-* divisor = dividend * quotient + remainder with deg(remainder) < deg(quotient)
-* Output: Indicates if division was successful
-*
-* WARNING: Can, even in low dimensions, lead to integer overflow
+/**
+* @brief Standard polynomial division (iteratively)
+
+* @tparam R The type of the underlying ring
+* @param[in] rhs: The polynomial to divide by
+* @param[out] quotientOut: The resulting quotient
+* @param[out] remainderOut: The resulting remainder
+
+* @warning Can, even in low dimensions, lead to integer overflow
+
+* @return True if the division was successful, false if not 
 */
 template<typename R>
-bool Polynomial<R>::polyDiv(const Polynomial& divisor, Polynomial& quotientOut, Polynomial& remainderOut) const {
+bool Polynomial<R>::polyDiv(const Polynomial& rhs, Polynomial& quotientOut, Polynomial& remainderOut) const {
 	int degF = degree;
-	int degS = divisor.getDegree();
+	int degS = rhs.getDegree();
 
 	int remDeg = degF;
 	int resDeg = degF - degS;
@@ -35,7 +39,7 @@ bool Polynomial<R>::polyDiv(const Polynomial& divisor, Polynomial& quotientOut, 
 	R* remArr = util::copy<R, R>(coeffs, degF + 1);
 	R* resArr = util::zeroes<R>(resDeg + 1);
 
-	R divLead = divisor(degS);
+	R divLead = rhs(degS);
 
 	for (int k = degF; k >= 0; --k) {
 		R lead = remArr[k];
@@ -48,10 +52,10 @@ bool Polynomial<R>::polyDiv(const Polynomial& divisor, Polynomial& quotientOut, 
 			util::deallocate(resArr);
 			return false;
 		}
-		// Calculate rem = rem - (rem_k / lead(divisor)) * X^(k - deg(divisor)) * divisor
+		// Calculate rem = rem - (rem_k / lead(rhs)) * X^(k - deg(rhs)) * rhs
 		resArr[k - degS] = remArr[k] / divLead;
 		for (int i = 0; i <= degS; ++i) {
-			remArr[i + k - degS] -= resArr[k - degS] * divisor(i);
+			remArr[i + k - degS] -= resArr[k - degS] * rhs(i);
 		}
 	}
 	quotientOut = Polynomial(resArr, resDeg);
@@ -65,7 +69,6 @@ bool Polynomial<R>::polyDiv(const Polynomial& divisor, Polynomial& quotientOut, 
 // Constructors
 //---------------------------------------------------------------------|
 
-// Monomial constructor
 template <typename R>
 Polynomial<R>::Polynomial(const R& coeff, int deg) : degree(deg) {
 	if (coeff == 0) {
@@ -76,11 +79,9 @@ Polynomial<R>::Polynomial(const R& coeff, int deg) : degree(deg) {
 	}
 }
 
-// Constant integer polynomial constructor
 template <typename R>
-Polynomial<R>::Polynomial(int coeff) : Polynomial<R>(R(coeff), 0) { }
+Polynomial<R>::Polynomial(int coeff) : Polynomial<R>(R(coeff), 0) {}
 
-// Copy constructor
 template <typename R>
 Polynomial<R>::Polynomial(const Polynomial& orig) : degree(orig.degree) {
 	if (degree != -1) {
@@ -88,7 +89,6 @@ Polynomial<R>::Polynomial(const Polynomial& orig) : degree(orig.degree) {
 	}
 }
 
-// Move constructor
 template <typename R>
 Polynomial<R>::Polynomial(Polynomial&& src) noexcept : Polynomial{} {
 	swap(*this, src);
@@ -98,7 +98,6 @@ Polynomial<R>::Polynomial(Polynomial&& src) noexcept : Polynomial{} {
 // Operators (in place)
 //---------------------------------------------------------------------|
 
-// Assignment operator
 template <typename R>
 Polynomial<R>& Polynomial<R>::operator=(const Polynomial& rhs) {
 	Polynomial tmp(rhs);
@@ -106,7 +105,6 @@ Polynomial<R>& Polynomial<R>::operator=(const Polynomial& rhs) {
 	return *this;
 }
 
-// Move operator
 template <typename R>
 Polynomial<R>& Polynomial<R>::operator=(Polynomial&& src) noexcept {
 	Polynomial tmp(src);
@@ -119,11 +117,11 @@ Polynomial<R>& Polynomial<R>::operator=(Polynomial&& src) noexcept {
 //---------------------------------------------------------------------|
 
 template <typename R>
-Polynomial<R> Polynomial<R>::operator+(const Polynomial& addend) const {
-	int newDeg = std::max(degree, addend.getDegree());
+Polynomial<R> Polynomial<R>::operator+(const Polynomial& rhs) const {
+	int newDeg = std::max(degree, rhs.getDegree());
 	// Calculate new degree
-	if (degree == addend.getDegree()) {
-		while (newDeg >= 0 && (*this)(newDeg) + addend(newDeg) == 0) {
+	if (degree == rhs.getDegree()) {
+		while (newDeg >= 0 && (*this)(newDeg) + rhs(newDeg) == 0) {
 			--newDeg;
 		}
 	}
@@ -131,17 +129,17 @@ Polynomial<R> Polynomial<R>::operator+(const Polynomial& addend) const {
 
 	R* arr = util::zeroes<R>(newDeg + 1);
 	for (int i = 0; i <= std::min(newDeg, degree); ++i) arr[i] += (*this)(i);
-	for (int i = 0; i <= std::min(newDeg, addend.getDegree()); ++i) arr[i] += addend(i);
+	for (int i = 0; i <= std::min(newDeg, rhs.getDegree()); ++i) arr[i] += rhs(i);
 	
 	return Polynomial<R>(arr, newDeg);
 }
 
 template <typename R>
-Polynomial<R> Polynomial<R>::operator-(const Polynomial& subtrahend) const {
-	int newDeg = std::max(degree, subtrahend.getDegree());
+Polynomial<R> Polynomial<R>::operator-(const Polynomial& rhs) const {
+	int newDeg = std::max(degree, rhs.getDegree());
 	// Calculate new degree
-	if (degree == subtrahend.getDegree()) {
-		while (newDeg >= 0 && (*this)(newDeg) - subtrahend(newDeg) == 0) {
+	if (degree == rhs.getDegree()) {
+		while (newDeg >= 0 && (*this)(newDeg) - rhs(newDeg) == 0) {
 			--newDeg;
 		}
 	}
@@ -149,59 +147,76 @@ Polynomial<R> Polynomial<R>::operator-(const Polynomial& subtrahend) const {
 
 	R* arr = util::zeroes<R>(newDeg + 1);
 	for (int i = 0; i <= std::min(newDeg, degree); ++i) arr[i] += (*this)(i);
-	for (int i = 0; i <= std::min(newDeg, subtrahend.getDegree()); ++i) arr[i] -= subtrahend(i);
+	for (int i = 0; i <= std::min(newDeg, rhs.getDegree()); ++i) arr[i] -= rhs(i);
 	
 	return Polynomial<R>(arr, newDeg);
 }
 
 template <typename R>
-Polynomial<R> Polynomial<R>::operator*(const Polynomial& multiplicand) const {
-	if (degree == -1 || multiplicand.getDegree() == -1) return 0;
+Polynomial<R> Polynomial<R>::operator*(const Polynomial& rhs) const {
+	if (degree == -1 || rhs.getDegree() == -1) return 0;
 
-	int newDeg = degree + multiplicand.getDegree();
+	int newDeg = degree + rhs.getDegree();
 	R* arr = util::zeroes<R>(newDeg + 1);
 	for (int i = 0; i <= degree; ++i) {
-		for (int j = 0; j <= multiplicand.getDegree(); ++j) {
-			arr[i + j] += (*this)(i) * multiplicand(j);
+		for (int j = 0; j <= rhs.getDegree(); ++j) {
+			arr[i + j] += (*this)(i) * rhs(j);
 		}
 	}
 	return Polynomial<R>(arr, newDeg);
 }
 
+/**
+ * @brief Polynomial division
+ * 
+ * @tparam R The type of the underlying ring
+ * @param rhs The polynomial to divide by
+ * 
+ * @throws std::invalid_argument if the division is not possible
+ * 
+ * @return The quotient of the two polynomials
+ */
 template <typename R>
-Polynomial<R> Polynomial<R>::operator/(const Polynomial& divisor) const {
-	if (divisor == 0) {
+Polynomial<R> Polynomial<R>::operator/(const Polynomial& rhs) const {
+	if (rhs == 0) {
 		throw std::invalid_argument("Division by zero.");
 	}
 	if (*this == 0) return 0;
-	if (*this == divisor) return 1;
+	if (*this == rhs) return 1;
 
-	// TODO: catch div not being a divisor
 	Polynomial quotient, rem;
-	if (!polyDiv(divisor, quotient, rem) || rem.getDegree() != -1) {
+	if (!polyDiv(rhs, quotient, rem) || rem.getDegree() != -1) {
 		throw std::invalid_argument("Cannot divide in this ring.");
 	}
 	return quotient;
 }
 
+/**
+ * @brief Polynomial modulation
+ * 
+ * @tparam R The type of the underlying ring
+ * @param rhs The polynomial to modulate by
+ * 
+ * @throws std::invalid_argument if the modulus is zero
+ * 
+ * @return The remainder of the division of this by rhs, or zero if polynomial division can (or should) not be performed 
+ */
 template <typename R>
-Polynomial<R> Polynomial<R>::operator%(const Polynomial& modulus) const {
-	if (modulus == 0) {
+Polynomial<R> Polynomial<R>::operator%(const Polynomial& rhs) const {
+	if (rhs == 0) {
 		throw std::invalid_argument("Polynomial modulation by zero.");
 	}
-	if (*this == modulus) return 0;
+	if (*this == rhs) return 0;
 
 	Polynomial<R> quotient, rem;
-	if (modulus.getDegree() == 0 || !polyDiv(modulus, quotient, rem)) {
-		// Polydiv cannot (or should not) be performed, assume gcd(*this, modulus) == 1
-		return (modulus == 1 ? 0 : 1);
+	if (rhs.getDegree() == 0 || !polyDiv(rhs, quotient, rem)) {
+		// Polydiv cannot (or should not) be performed, assume gcd(*this, rhs) == 1
+		return (rhs == 1 ? 0 : 1);
 	} else {
-		// Correct but probably slows down the program considerably
 		return rem;
 	}
 }
 
-// Polynomial comparison
 template<typename R>
 bool Polynomial<R>::operator==(const Polynomial& rhs) const {
 	if (degree != rhs.degree) return false;
@@ -210,7 +225,16 @@ bool Polynomial<R>::operator==(const Polynomial& rhs) const {
 	return true;
 }
 
-// Access operator for coefficients
+/**
+ * @brief Access operator for coefficients
+ * 
+ * @tparam R The type of the underlying ring
+ * @param idx The index of the coefficient to access
+ * 
+ * @throws std::invalid_argument if the index is out of bounds
+ * 
+ * @return The coefficient at the given index
+ */
 template <typename R>
 const R& Polynomial<R>::operator()(int idx) const {
 	if (idx < 0 || idx > degree) {
@@ -219,7 +243,15 @@ const R& Polynomial<R>::operator()(int idx) const {
 	return coeffs[idx];
 }
 
-// Stream operator
+/**
+ * @brief Output operator for polynomials
+ * 
+ * @tparam R The type of the underlying ring
+ * @param os The output stream
+ * @param obj The polynomial object to be printed
+ * 
+ * @return The output stream
+ */
 template <typename R>
 std::ostream& operator<< <>(std::ostream& os, const Polynomial<R>& obj) {
 	const int deg = obj.getDegree();
@@ -255,8 +287,14 @@ std::ostream& operator<< <>(std::ostream& os, const Polynomial<R>& obj) {
 // Operations
 //---------------------------------------------------------------------|
 
-
-// Return value at given value using horners method
+/**
+ * @brief Evaluates the polynomial at a given value using Horner's method
+ * 
+ * @tparam R The type of the underlying ring
+ * @param x The value to evaluate the polynomial at
+ * 
+ * @return The value of the polynomial at x
+ */
 template <typename R>
 R Polynomial<R>::map(const R& x) const {
 	R ret = 0;
@@ -267,7 +305,13 @@ R Polynomial<R>::map(const R& x) const {
 	return ret;
 }
 
-// Return algebraic derivative
+/**
+ * @brief Returns the algebraic derivative of the polynomial
+ * 
+ * @tparam R The type of the underlying ring
+ * 
+ * @return The derivative of the polynomial
+ */
 template <typename R>
 Polynomial<R> Polynomial<R>::derivative() const {
 	if (degree < 1) return 0;
@@ -292,7 +336,15 @@ void swap(Polynomial<R>& lhs, Polynomial<R>& rhs) {
 // Static functions
 //---------------------------------------------------------------------|
 
-// Parse string of coefficients into polynomial
+/**
+ * @brief A parse function for polynomials, which reads coefficients from a string and constructs a polynomial from them. The coefficients are expected to be in the form of "a_n a_(n-1) ... a_0", where a_i is the coefficient of X^i.
+ * 
+ * @tparam R The type of the underlying ring
+ * @param str The string to be parsed
+ * @param out The polynomial to be constructed
+ * 
+ * @return true if the parsing was successful, false otherwise
+ */
 template <typename R> 
 bool Polynomial<R>::parseToPolynomial(const std::string& str, Polynomial<R>& out) {
 	int num = 0;

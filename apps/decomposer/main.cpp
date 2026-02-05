@@ -71,6 +71,12 @@ int main() {
     }
 }
 
+/**
+ * @brief Decomposes a given matrix into its jordan normal form
+ * 
+ * @tparam R type of the underlying euclidean ring
+ * @param mat The matrix to decompose
+ */
 template<typename R>
 void decomp(Matrix<R>& mat) {
     std::cout << "Decomposing\n" << mat << "with " << typeid(R).name() << " coefficients:\n";
@@ -95,9 +101,14 @@ void decomp(Matrix<R>& mat) {
     std::cout << "\n";
 }
 
-/*
-* @brief Returns the adjacency matrix of the full bipartite graph
-*/
+/**
+ * @brief Constructs the adjacency matrix of the complete bipartite graph K_{n, m}
+ * 
+ * @tparam R The type of the entries of the matrix
+ * @param n The number of rows
+ * @param m The number of columns
+ * @return The adjacency matrix of K_{n, m}
+ */
 template<typename R>
 Matrix<R> fullBipartite(int n, int m) {
     int k = n + m;
@@ -107,7 +118,5 @@ Matrix<R> fullBipartite(int n, int m) {
             values[k * i + j] = (((j < n && i < n) || (j >= n && i >= n)) ? 0 : 1);
         }
     }
-    Matrix<R> ret(values, k, k);
-    util::deallocate(values);
-    return ret;
+    return Matrix<R>(values, k, k);
 }

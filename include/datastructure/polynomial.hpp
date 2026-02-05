@@ -11,10 +11,10 @@ template <typename R> class Polynomial;
 template <typename R> std::ostream& operator<<(std::ostream&, const Polynomial<R>&);
 template <typename R> void swap(Polynomial<R>&, Polynomial<R>&);
 
-/* 
-* A class representing a polynomial with coefficients in a ring R.
+/**
+* @brief A class representing a polynomial with coefficients in a commutative ring R.
 *
-* Note: Always include this file AFTER the inclusion of the class implementing R
+* @tparam R The type of the underlying commutative ring
 */
 template <typename R> 
 class Polynomial {
@@ -27,8 +27,8 @@ private:
 	// Member variables
 	//---------------------------------------------------------------------|
 
-	R* coeffs = nullptr;	// Pointer to the array containing the (degree + 1) coefficients
-	int degree = -1;		// The degree
+	R* coeffs = nullptr;	///< Pointer to the array containing the (degree + 1) coefficients
+	int degree = -1;		///< The degree
 
 	//---------------------------------------------------------------------|
 	// Polynomial division
@@ -40,7 +40,7 @@ private:
 	// Memory access
 	//---------------------------------------------------------------------|
 
-	Polynomial(R* arr, int deg) : degree(deg), coeffs(arr) {};	// Standard constructor
+	Polynomial(R* arr, int deg) : degree(deg), coeffs(arr) {};	///< Standard constructor
 
 //-------------------------------------------------------------------------------------------------------------|
 // Public
@@ -50,41 +50,41 @@ public:
 	// Constructors
 	//---------------------------------------------------------------------|
 
-	Polynomial() = default;						// Default constructor
-	Polynomial(const R&, int = 0);
-	Polynomial(int);
-	Polynomial(const Polynomial&);
-	Polynomial(Polynomial&&) noexcept;
+	Polynomial() = default;
+	Polynomial(const R&, int = 0);				///< Constant polynomial constructor
+	Polynomial(int);							///< Monomial constructor
+	Polynomial(const Polynomial&);				///< Copy constructor
+	Polynomial(Polynomial&&) noexcept;			///< Move constructor
 
-	~Polynomial() { util::deallocate(coeffs); }	// Destructor
+	~Polynomial() { util::deallocate(coeffs); }	///< Destructor
 
 	//---------------------------------------------------------------------|
 	// Operators (in place)
 	//---------------------------------------------------------------------|
 
-	Polynomial operator+=(const Polynomial& rhs) { *this = *this + rhs; return *this; }
-	Polynomial operator-=(const Polynomial& rhs) { *this = *this - rhs; return *this; }
-	Polynomial operator*=(const Polynomial& rhs) { *this = *this * rhs; return *this; }
-	Polynomial operator/=(const Polynomial& rhs) { *this = *this / rhs; return *this; }
-	Polynomial operator%=(const Polynomial& rhs) { *this = *this % rhs; return *this; }
+	Polynomial operator+=(const Polynomial& rhs) { *this = *this + rhs; return *this; }	///< In place polynomial addition
+	Polynomial operator-=(const Polynomial& rhs) { *this = *this - rhs; return *this; }	///< In place polynomial subtraction
+	Polynomial operator*=(const Polynomial& rhs) { *this = *this * rhs; return *this; }	///< In place polynomial multiplication
+	Polynomial operator/=(const Polynomial& rhs) { *this = *this / rhs; return *this; } ///< In place polynomial division
+	Polynomial operator%=(const Polynomial& rhs) { *this = *this % rhs; return *this; }	///< In place polynomial modulation
 
-	Polynomial& operator=(const Polynomial&);
-	Polynomial& operator=(Polynomial&&) noexcept;
+	Polynomial& operator=(const Polynomial&);											///< Assignment operator
+	Polynomial& operator=(Polynomial&&) noexcept;										///< Move operator
 
 	//---------------------------------------------------------------------|
 	// Operators (out of place)
 	//---------------------------------------------------------------------|
 
-	Polynomial operator+(const Polynomial&) const;
-	Polynomial operator-(const Polynomial&) const;
-	Polynomial operator*(const Polynomial&) const;
+	Polynomial operator+(const Polynomial&) const;								///< Out of place polynomial addition
+	Polynomial operator-(const Polynomial&) const;								///< Out of place polynomial subtraction
+	Polynomial operator*(const Polynomial&) const;								///< Out of place polynomial multiplication
 	Polynomial operator/(const Polynomial&) const;
 	Polynomial operator%(const Polynomial&) const;
 	
-	bool operator==(const Polynomial&) const;
-	bool operator!=(const Polynomial& rhs) const { return !(*this == rhs); }
+	bool operator==(const Polynomial&) const;									///< Polynomial equality
+	bool operator!=(const Polynomial& rhs) const { return !(*this == rhs); }	///< Polynomial inequality
 
-	const R& operator()(int) const;
+	const R& operator()(int) const;	
 	
 	friend std::ostream& operator<< <>(std::ostream&, const Polynomial&);
 
@@ -99,20 +99,20 @@ public:
 	// Getters
 	//---------------------------------------------------------------------|
 
-	inline int getDegree() const { return degree; };
+	inline int getDegree() const { return degree; };	///< Getter for the degree
 
 	//---------------------------------------------------------------------|
 	// Others
 	//---------------------------------------------------------------------|
 
-	friend void swap<>(Polynomial&, Polynomial&);
+	friend void swap<>(Polynomial&, Polynomial&);		///< Swaps two polynomials
 
 	//---------------------------------------------------------------------|
 	// Static functions
 	//---------------------------------------------------------------------|
 
 	static bool parseToPolynomial(const std::string&, Polynomial&);
-	static int characteristic() { return R::characteristic(); }		// Returns the characteristic of R[X]
+	static int characteristic() { return R::characteristic(); }		///< Returns the characteristic of R[X]
 };
 
-#include "polynomial.tpp"
+#include "polynomial.ipp"

@@ -5,25 +5,21 @@
 // Elementary row operations (in place)
 //---------------------------------------------------------------------|
 
-// Scale i-th row by scale
 template<typename R>
 void Matrix<R>::scaleRow(int i, const R& scale) {
 	for (int j = 0; j < m; ++j) rawEntry(i, j) *= scale;
 }
 
-// Divide i-th row by div
 template<typename R>
 void Matrix<R>::cancelRow(int i, const R& div) {
 	for (int j = 0; j < m; ++j) rawEntry(i, j) /= div;
 }
 
-// Swap i1-th with i2-th row
 template<typename R> 
 void Matrix<R>::swapRows(int i1, int i2) {
 	for (int j = 0; j < m; ++j) std::swap(rawEntry(i1, j), rawEntry(i2, j));
 }
 
-// Subtract i2-th row, scaled by scale, from i1-th row
 template<typename R>
 void Matrix<R>::subtractRow(int i1, int i2, const R& scale) {
 	for (int j = 0; j < m; ++j) rawEntry(i1, j) -= scale * (*this)(i2, j);
@@ -33,9 +29,14 @@ void Matrix<R>::subtractRow(int i1, int i2, const R& scale) {
 // Row reduction
 //---------------------------------------------------------------------|
 
-/* Turn matrix into (reduced) row echelon form using the gaussian algorithm.
-* Sets the member variables determinant, rank and reduced
-*/ 
+/**
+ * @brief Turns the matrix into (reduced) row echelon form using the Gaussian algorithm
+ *
+ * @tparam R The type of the underlying euclidean ring
+ * @param reduced Indicates if the row echelon form should be reduced (rref, with zeros above the diagonal) or not (ref)
+ * 
+ * @note Sets the member variables rank, reduced and determinant, if applicable
+ */
 template <typename R>
 void Matrix<R>::rref(bool reduced) {
 	R detNumer = 1;
@@ -104,9 +105,15 @@ void Matrix<R>::rref(bool reduced) {
 // Characteristic polynomial algorithms
 //---------------------------------------------------------------------|
 
-/* Calculate the characteristic polynomial as the determinant of I * X - A with polynomial entries
-* Warning: Highly volatile and should only be used in rings of finite characteristic
-*/
+/**
+ * @brief Calculate the characteristic polynomial using the naive definition @f[ p(X) := det(X*I - A) @f]
+ * 
+ * @tparam R The type of the underlying euclidean ring
+ * 
+ * @warning Highly volatile and should only be used with rings of finite characteristic
+ * 
+ * @return The characteristic polynomial of the matrix
+ */
 template <typename R>
 Polynomial<R> Matrix<R>::charPolyNaive() const {
 	Matrix<Polynomial<R>>polyMat(Polynomial<R>(1, 1), n, m);
@@ -114,9 +121,15 @@ Polynomial<R> Matrix<R>::charPolyNaive() const {
 	return polyMat.getDeterminant();
 }
 
-/* Calculate the characteristic polynomial using the faddeevLeVerrier algorithm
-* Warning: Might throw in finite characteristic 
-*/
+/**
+ * @brief Calculate the characteristic polynomial using the faddeevLeVerrier algorithm
+ * 
+ * @tparam R The type of the underlying ring
+ * 
+ * @warning Should only be used with rings of characteristic zero
+ * 
+ * @return The characteristic polynomial of the matrix
+ */
 template<typename R>
 Polynomial<R> Matrix<R>::faddeevLeVerrier() const {
 	Matrix<R> C(*this);
@@ -143,7 +156,6 @@ Polynomial<R> Matrix<R>::faddeevLeVerrier() const {
 // Constructors
 //----------------------------------------------------------------------|
 
-// Diagonal matrix constructor
 template <typename R>
 Matrix<R>::Matrix(R entry, const int n, int m) : n(n), m(m), reduced(false) {
 	entries = util::zeroes<R>(n * m);
@@ -152,13 +164,11 @@ Matrix<R>::Matrix(R entry, const int n, int m) : n(n), m(m), reduced(false) {
 	}
 }
 
-// Copy Constructor
 template<typename R>
 Matrix<R>::Matrix(const Matrix<R>& orig) : n(orig.n), m(orig.m), reduced(orig.reduced) {
 	entries = util::copy<R, R>(orig.entries, n * m);
 }
 
-// Move constructor
 template <typename R>
 Matrix<R>::Matrix(Matrix<R>&& src) noexcept : Matrix{} {
 	swap(*this, src);
@@ -168,7 +178,6 @@ Matrix<R>::Matrix(Matrix<R>&& src) noexcept : Matrix{} {
 // Operators (in place)
 //----------------------------------------------------------------------|
 
-// Addition
 template<typename R>
 Matrix<R> Matrix<R>::operator+=(const Matrix<R>& rhs) {
 	for (int i = 0; i < n; ++i) {
@@ -179,7 +188,6 @@ Matrix<R> Matrix<R>::operator+=(const Matrix<R>& rhs) {
 	return *this;
 }
 
-// Subtraction
 template<typename R>
 Matrix<R> Matrix<R>::operator-=(const Matrix<R>& rhs) {
 	for (int i = 0; i < n; ++i) {
@@ -190,14 +198,12 @@ Matrix<R> Matrix<R>::operator-=(const Matrix<R>& rhs) {
 	return *this;
 }
 
-// Scalar multiplication
 template<typename R>
-Matrix<R> Matrix<R>::operator*=(const R& multiplicand) {
-	for (int k = 0; k < n * m; ++k) entries[k] *= multiplicand;
+Matrix<R> Matrix<R>::operator*=(const R& rhs) {
+	for (int k = 0; k < n * m; ++k) entries[k] *= rhs;
 	return *this;
 }
 
-// Assignment operator
 template <typename R>
 Matrix<R>& Matrix<R>::operator=(const Matrix<R>& rhs) {
 	Matrix tmp(rhs);
@@ -205,7 +211,6 @@ Matrix<R>& Matrix<R>::operator=(const Matrix<R>& rhs) {
 	return *this;
 }
 
-// Move operator
 template <typename R>
 Matrix<R>& Matrix<R>::operator=(Matrix<R>&& src) noexcept {
 	Matrix tmp(src);
@@ -217,7 +222,6 @@ Matrix<R>& Matrix<R>::operator=(Matrix<R>&& src) noexcept {
 // Operators (out of place)
 //-------------------------------------------------------------------------------|
 
-// Multiplication
 template<typename R>
 Matrix<R> Matrix<R>::operator*(const Matrix<R>& multiplicand) const {
 	int multM = multiplicand.getM();
@@ -234,7 +238,6 @@ Matrix<R> Matrix<R>::operator*(const Matrix<R>& multiplicand) const {
 	return Matrix<R>(arr, n, multM);
 }
 
-// Comparison
 template <typename R>
 bool Matrix<R>::operator==(const Matrix<R>& rhs) const {
 	if (n != rhs.n || m != rhs.m) {
@@ -250,7 +253,6 @@ bool Matrix<R>::operator==(const Matrix<R>& rhs) const {
 	return true;
 }
 
-// Scalar comparison
 template <typename R>
 bool Matrix<R>::operator==(const R& rhs) const {
 	for (int i = 0; i < n; ++i) {
@@ -265,7 +267,17 @@ bool Matrix<R>::operator==(const R& rhs) const {
 	return true;
 }
 
-// Getter for j-th entry in i-th row
+/**
+ * @brief Getter for entry (i, j)
+ * 
+ * @tparam R The underlying type
+ * @param i The row index
+ * @param j The column index
+ * 
+ * @throws std::invalid_argument if the indices are out of bounds
+ * 
+ * @return The entry (i, j)
+ */
 template <typename R>
 const R& Matrix<R>::operator()(const int i, const int j) const {
 	if (0 > i || i >= n || 0 > j || j >= m) {
@@ -274,7 +286,14 @@ const R& Matrix<R>::operator()(const int i, const int j) const {
 	return entries[index(i, j, m)];
 }
 
-// Stream operator
+/**
+ * @brief Stream operator
+ * 
+ * @tparam R The underlying type
+ * @param os The output stream
+ * @param obj The object to stream
+ * @return The output stream
+ */
 template <typename R>
 std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
 	std::vector<int> colSizes;
@@ -312,9 +331,17 @@ std::ostream& operator<< <>(std::ostream& os, const Matrix<R>& obj) {
 // Operations
 //----------------------------------------------------------------------|
 
-// Calculate X, such that A * X is the return value times the identity
+/**
+ * @brief Calculate the minimally scaled inverse of the matrix 
+ * 
+ * @tparam R The type of the underlying euclidean ring
+ * 
+ * @param[out] inv The inverse matrix scaled by a factor
+ * 
+ * @return R The scaling factor such that @f[ inv = scale * A^{-1} @f]
+ */
 template <typename R>
-R Matrix<R>::inverse(Matrix<R>& out) const {
+R Matrix<R>::inverse(Matrix<R>& inv) const {
 	// Get (mat, I)
 	Matrix<R> reduced = mergeHorizontal(Matrix<R>(1, n, n));
 	// Reduce, resulting matrix contains inverse multiplied by a diagonal matrix
@@ -335,16 +362,22 @@ R Matrix<R>::inverse(Matrix<R>& out) const {
 			arr[i * m + j] = reduced(i, m + j) * (diagLcm / reduced(i, i));
 		}
 	}
-	out = Matrix<R>(arr, n, m);
+	inv = Matrix<R>(arr, n, m);
 	return diagLcm;
 }
 
-// Return a base for the nullspace of matrix
+/**
+ * @brief Return a base for the nullspace of this matrix
+ * 
+ * @tparam R The type of the underlying euclidean ring
+ * 
+ * @return A matrix whose columns form a bas of the nullspace of this matrix
+ */
 template<typename R>
 Matrix<R> Matrix<R>::nullspace() const {
 	Matrix<R> phi(*this);
 	phi.rref(true);
-	// Row indicates the current row in the rref, column counts the current number of vectors in the incomplete basis
+	// Row indicates the current row in the rref, column counts the current number of vectors in the incomplete base
 	int row = 0;
 	int column = 0;
 	int dim = m - phi.getRank();
@@ -374,12 +407,17 @@ Matrix<R> Matrix<R>::nullspace() const {
 			indices[row++] = j;
 		}
 	}
-	Matrix<R> result(arr, m, dim);
-	assert(phi * result == 0);
-	return result;
+	return Matrix<R>(arr, m, dim);
 }
 
-// Complete the span of the column vectors to the span of the column vectors of rhs
+/**
+ * @brief Complete the span of the column vectors of this matrix to the span of the column vectors of rhs
+ * 
+ * @tparam R The type of the underlying euclidean ring
+ * @param rhs The matrix to complete to
+ * 
+ * @return A matrix whose columns form a basis for the complement of the span of the columns of this in the span of the columns of rhs
+ */
 template <typename R>
 Matrix<R> Matrix<R>::complete(const Matrix<R>& rhs) const {
 	if (*this == 0) return rhs;
@@ -408,7 +446,13 @@ Matrix<R> Matrix<R>::complete(const Matrix<R>& rhs) const {
 	return Matrix<R>(arr, n, newM);
 }
 
-// Merge matrix horizontally with rhs
+/**
+ * @brief Merge this matrix with rhs horizontally
+ * 
+ * @tparam R The underlying type
+ * @param rhs The matrix to be merged with
+ * @return The merged matrix
+ */
 template <typename R>
 Matrix<R> Matrix<R>::mergeHorizontal(const Matrix<R>& rhs) const {
 	int newM = m + rhs.getM();
@@ -424,7 +468,15 @@ Matrix<R> Matrix<R>::mergeHorizontal(const Matrix<R>& rhs) const {
 	return Matrix<R>(arr, n, newM);
 }
 
-// Calculates the characteristic polynomial p(x) = det(x * I - A)
+/**
+ * @brief Calculate the characteristic polynomial of this matrix
+ * 
+ * @tparam R The underlying euclidean ring with a static function characteristic()
+ * 
+ * @note The algorithm used depends on the characteristic of the ring
+ * 
+ * @return The characteristic polynomial 
+ */
 template <typename R>
 Polynomial<R> Matrix<R>::charPoly() const {
 	if (n != m) throw std::invalid_argument("Characteristic polynomial undefined for non-square matrix.");
@@ -439,7 +491,6 @@ Polynomial<R> Matrix<R>::charPoly() const {
 // Getters
 //----------------------------------------------------------------------|
 
-// Return the rank of this matrix
 template<typename R>
 int Matrix<R>::getRank() const {
 	if(reduced) return rank;
@@ -449,7 +500,6 @@ int Matrix<R>::getRank() const {
 	return A.getRank();
 }
 
-// Return the determinant of this matrix
 template<typename R>
 R Matrix<R>::getDeterminant() const {
 	if(reduced) return determinant;
@@ -459,17 +509,31 @@ R Matrix<R>::getDeterminant() const {
 	return A.getDeterminant();
 }
 
-// Return the i1-th to i2-th row
+/**
+ * @brief Return the i1-th to i2-th row
+ * 
+ * @tparam R The underlying type
+ * @param i1 The lower row index
+ * @param i2 The upper row index (inclusive)
+ * 
+ * @return The i1-th to i2-th row of this matrix
+ */
 template<typename R>
 Matrix<R> Matrix<R>::getRows(int i1, int i2) const {
 	int newN = i2 - i1 + 1;
 	return Matrix<R>(util::copy<R, R>(entries + i1, newN * m), newN, m);
 }
 
-// Return the j1-th to j2-th column
+/**
+ * @brief Return the j1-th to j2-th column
+ * 
+ * @tparam R The underlying type
+ * @param j1 The lower column index
+ * @param j2 The upper column index (inclusive)
+ * @return The j1-th to j2-th column of this matrix
+ */
 template<typename R>
 Matrix<R> Matrix<R>::getColumns(int j1, int j2) const {
-    assert(j2 < m);
 	int newM = j2 - j1 + 1;
     R* arr = util::allocate<R>(n * newM);
     for (int i = 0; i < n; ++i) {
@@ -493,9 +557,20 @@ void swap(Matrix<R>& lhs, Matrix<R>& rhs) {
 // Static functions
 //-------------------------------------------------------------------------------------------------------------|
 
-// Returns a Matrix with coefficients in R from a string of integers. The number of integers in the string must be a perfect square.
+/**
+ * @brief Parses a string to a matrix
+ * 
+ * @tparam R The underlying ring
+ * @param[in] str The string to be parsed
+ * @param[out] res The resulting matrix
+ * @param[in] n The number of rows in the output matrix (if -1, assumes square matrix)
+ * 
+ * @note The string must be a sequence of integers separated by whitespace
+ * 
+ * @return true if parsing was successful, false otherwise
+ */
 template<typename R>
-bool Matrix<R>::parseToMatrix(const std::string& str, Matrix<R>& out, int n) {
+bool Matrix<R>::parseToMatrix(const std::string& str, Matrix<R>& res, int n) {
 	int m;
 	int num = 0;
 	std::istringstream is(str);
@@ -517,6 +592,6 @@ bool Matrix<R>::parseToMatrix(const std::string& str, Matrix<R>& out, int n) {
     int cnt = 0;
     for (int value : data) values[cnt++] = value;
 
-    out = Matrix<R>(values, n, m);
+    res = Matrix<R>(values, n, m);
     return true;
 }

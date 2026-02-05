@@ -7,31 +7,32 @@
 template <typename R> bool getRoot(const Polynomial<R>&, Polynomial<R>&);
 template <typename R> Matrix<R> jordanDecomposition(Matrix<R>&);
 
-/*
-* @brief Calculate a factor of a given polynomial
-* @param toFactor the polynomial to factor
-* @param factor A pointer to a polynomial, to which the result is written
-* @return true if a factor was found, false otherwise
-* 
-* TODO: Improve everything
-*/
+/**
+ * @brief Get a root of a given polyomial.
+ * 
+ * @tparam R The type of the underlying ring
+ * @param[in] toFactor The polynomial to get a root of
+ * @param[out] root The root of the polynomial, if found
+ * 
+ * @return true if a root was found, false otherwise
+ */
 template <typename R>
-bool getRoot(const Polynomial<R>& toFactor, R& out) {
+bool getRoot(const Polynomial<R>& toFactor, R& root) {
 	if (toFactor.getDegree() < 1) return false;
 	// If the constant term is zero, X is a factor
 	if (toFactor(0) == 0) {
-		out = 0;
+		root = 0;
 		return true;
 	}
 	for (int val = -20; val <= 20; ++val) {
 		if (toFactor.map(val) == 0) {
-			out = val;
+			root = val;
 			return true;
 		}
 	}
 	// If toFactor is of the Form aX + b return X + b/a 
 	if (toFactor.getDegree() == 1) {
-		out = toFactor(0) / toFactor(1);					// TODO: Possible error, rather return aX + b
+		root = toFactor(0) / toFactor(1);					// TODO: Possible error, rather return aX + b
 		return true;
 	}
 	// If the degree if of toFactor is 2, return its roots by the abc-formula
@@ -41,17 +42,21 @@ bool getRoot(const Polynomial<R>& toFactor, R& out) {
 		R c = toFactor(0);
 
 		if (b * b - a * c * 4 == 0) {
-			out = b / (a * 2);							// TODO: Possible error
+			root = b / (a * 2);							// TODO: Possible error
 			return true;
 		}
 	}
 	return false;
 }
 
-/*
-* Return the (possibly partial) Jordan normal form
-* TODO: Return Frobenius normal form for factors of degree two
-*/
+/**
+ * @brief Calculate a jordan basis of a given matrix
+ * 
+ * @tparam R The type of the underlying euclidean ring
+ * @param A The matrix to calculate the jordan basis of
+ * 
+ * @return A matrix whose columns form a jordan basis of A
+ */
 template <typename R>
 Matrix<R> jordanDecomposition(Matrix<R>& A) {
 	int n = A.getN();
